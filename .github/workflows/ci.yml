@@ -1,0 +1,55 @@
+name: CI & Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  app-tests:
+    name: اختبارات التطبيق (١٦١)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install
+      - name: تثبيت متصفح الاختبار
+        run: npx playwright-core install chromium
+      - name: تشغيل الحزمة كاملة
+        run: |
+          export CHROME_EXE=$(node -e "console.log(require('playwright-core').chromium.executablePath())")
+          node run_all_tests.mjs
+
+  rules-tests:
+    name: اختبارات قواعد الأمان (محاكي Firestore)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - run: npm install @firebase/rules-unit-testing firebase firebase-tools
+      - name: تشغيل اختبارات القواعد بالمحاكي
+        run: npx firebase emulators:exec --only firestore --project demo-iomp "node firestore-rules.test.mjs"
+
+  deploy-pages:
+    name: نشر GitHub Pages
+    needs: [app-tests, rules-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: تجهيز موقع النشر (التطبيق فقط)
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+      - id: deployment
+        uses: actions/deploy-pages@v4
