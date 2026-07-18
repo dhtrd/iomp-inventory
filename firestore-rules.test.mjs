@@ -19,7 +19,7 @@ await testEnv.withSecurityRulesDisabled(async (ctx) => {
   const d = ctx.firestore();
   await setDoc(doc(d, 'config/permissions'), {
     roles: { 'مطّلع': { 'report.view': false, 'report.view.location': true } },
-    users: { u_asgn: { 'session.assign': true, count: false } }, // «تكليف» وحده — لاختبار نطاق القراءة
+    users: { u_asgn: { 'session.assign': true, count: false }, u_vw: { 'report.view': true } }, // «تكليف» وحده + مطّلع بالاطّلاع الكامل — لاختبار نطاق القراءة
     userLocations: { u_loc: ['فرع أ'] },
     warehouses: [{ id: 'w1', name: 'فرع أ', deleted: false }],
   });
