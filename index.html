@@ -383,6 +383,130 @@ select option:disabled{color:var(--tmuted)}
 .selx-opt:hover,.selx-opt.active{background:var(--navy100)}
 .selx-opt.sel{background:var(--navy100);color:var(--navy700);font-weight:600}
 .selx-empty{padding:14px;text-align:center;color:var(--tmuted);font-size:13px}
+/* ══════════════════════════════════════════════════════════════════════════
+   طبقة الصقل المؤسسية (21st.dev) — إضافة خالصة فوق النظام القائم:
+   رموز ارتفاع/حركة/تركيز موحّدة، ظلال طبقية ناعمة، حالات تحويم أنيقة،
+   RTL-أولًا، داكن كامل، وإتاحة (تركيز مرئي + احترام تقليل الحركة).
+   لا تمسّ أي عقد وظيفي: select (المظهر/السهم/الحواف) ودرج الإشعارات والهوية كما هي.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --radius:12px;
+  --ease:cubic-bezier(.4,0,.2,1); --tr:.16s var(--ease);
+  --e1:0 1px 2px rgba(26,31,54,.05),0 1px 3px rgba(26,31,54,.06);
+  --e2:0 2px 4px rgba(26,31,54,.05),0 8px 20px -6px rgba(26,31,54,.10);
+  --e3:0 4px 10px rgba(26,31,54,.07),0 18px 40px -12px rgba(26,31,54,.18);
+  --e4:0 8px 18px rgba(26,31,54,.10),0 32px 72px -16px rgba(26,31,54,.28);
+}
+[data-theme="dark"]{
+  --e1:0 1px 2px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.24);
+  --e2:0 2px 4px rgba(0,0,0,.26),0 10px 24px -6px rgba(0,0,0,.38);
+  --e3:0 4px 10px rgba(0,0,0,.30),0 20px 44px -12px rgba(0,0,0,.50);
+  --e4:0 8px 18px rgba(0,0,0,.34),0 36px 80px -16px rgba(0,0,0,.62);
+}
+/* — أساس: أرقام جدولية للمخزون، تمرير أنيق، تحديد نص بلون اللكنة — */
+table,.tile .v,.kbd,#notifBadge{font-variant-numeric:tabular-nums}
+::selection{background:color-mix(in srgb,var(--navy700) 22%,transparent)}
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--tmuted) 38%,transparent) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--tmuted) 32%,transparent);border-radius:99px;border:3px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--tmuted) 50%,transparent);border:3px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-track{background:transparent}
+/* — إتاحة: حلقة تركيز موحّدة للوحة المفاتيح + احترام تقليل الحركة — */
+button:focus-visible,.btn:focus-visible,.linklike:focus-visible,.topsearch:focus-visible,.iconbtn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--card),0 0 0 4.5px color-mix(in srgb,var(--navy700) 55%,transparent)}
+.rcap:focus-visible,.rtask:focus-visible,input[type="checkbox"]:focus-visible{outline:2px solid color-mix(in srgb,var(--navy700) 60%,transparent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* — شاشة الدخول: خلفية إشعاعية خفيفة + علامة بتوهّج راقٍ — */
+.center{background:radial-gradient(900px 480px at 50% -8%,color-mix(in srgb,var(--navy700) 8%,transparent),transparent 70%)}
+.brand .mark{border-radius:16px;box-shadow:0 10px 28px -8px color-mix(in srgb,var(--navy700) 55%,transparent),inset 0 1px 0 rgba(255,255,255,.16)}
+.center .card{box-shadow:var(--e3);border-radius:20px}
+/* — الأزرار: تدرّج خفيف + لمعة داخلية + رفعة تحويم + ضغطة فعلية — */
+.btn{background:linear-gradient(180deg,color-mix(in srgb,var(--navy700) 90%,#fff),var(--navy700));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 2px rgba(26,31,54,.16);transition:transform var(--tr),box-shadow var(--tr),filter var(--tr),background-color var(--tr)}
+.btn:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 16px -6px color-mix(in srgb,var(--navy700) 65%,transparent)}
+.btn:active{transform:translateY(0) scale(.985);filter:brightness(.97)}
+.btn.ghost{background:var(--card);box-shadow:none;border:1px solid var(--border)}
+.btn.ghost:hover{background:var(--navy100);border-color:color-mix(in srgb,var(--navy700) 40%,var(--border));filter:none;box-shadow:0 2px 8px -4px rgba(26,31,54,.14)}
+.btn.danger{background:linear-gradient(180deg,color-mix(in srgb,var(--danger) 88%,#fff),var(--danger))}
+.btn.sm{border-radius:9px}
+.btn:disabled{transform:none;filter:grayscale(.15)}
+/* — البطاقات والبلاطات: ظل طبقي هادئ + عناوين أوضح — */
+.card{box-shadow:var(--e1);border-radius:16px}
+.card h2{font-size:16.5px;letter-spacing:-.1px}
+.tile{box-shadow:var(--e1);border-radius:14px;transition:box-shadow var(--tr),transform var(--tr)}
+.tile .v{font-size:21px;letter-spacing:-.2px}
+.tile.clk:hover{box-shadow:var(--e2);transform:translateY(-2px)}
+.sess,.urow,.acrow{background:var(--card);box-shadow:var(--e1)}
+.sess:hover,.urow:hover,.acrow:hover{box-shadow:var(--e2);border-color:color-mix(in srgb,var(--navy700) 22%,var(--border))}
+/* — الشريط الجانبي: مؤشّر فرع نشط + تحويم أنعم + حرف أول متوهّج — */
+.side{border-inline-start:none;box-shadow:-1px 0 0 var(--hair)}
+.nav button{position:relative;transition:background var(--tr),color var(--tr)}
+.nav button:hover .nvic{transform:translateY(-1px)}
+.nav button .nvic{transition:transform var(--tr)}
+.nav button.on{background:color-mix(in srgb,var(--navy700) 10%,transparent);font-weight:700}
+.nav button.on::before{content:"";position:absolute;inset-inline-start:3px;top:24%;height:52%;width:3px;border-radius:99px;background:var(--navy700);box-shadow:0 0 10px color-mix(in srgb,var(--navy700) 60%,transparent)}
+#appView[data-nav="collapsed"] .nav button.on::before{inset-inline-start:2px}
+.whochip .wav{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--navy700) 30%,transparent)}
+/* — الترويسة العلوية: زجاج مصنفر مثبّت + أزرار أيقونية أنيقة — */
+.topbar{background:var(--card);background:color-mix(in srgb,var(--card) 80%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);box-shadow:0 1px 0 var(--hair)}
+.topbar .iconbtn,.udrawer-head .iconbtn{transition:background var(--tr),border-color var(--tr),transform var(--tr)}
+.topbar .iconbtn:hover{border-color:color-mix(in srgb,var(--navy700) 35%,var(--border));transform:translateY(-1px)}
+.topbar-title{font-size:16.5px;letter-spacing:-.15px}
+.topsearch{border-radius:10px;transition:border-color var(--tr),box-shadow var(--tr),background var(--tr)}
+.topsearch:hover{background:var(--card);box-shadow:var(--e1)}
+.kbd{box-shadow:inset 0 -1.5px 0 var(--border);border-radius:6px}
+/* — الحقول والبحث والفلاتر: حدود تتنفس + حلقات تركيز ناعمة — */
+.field input,.rtools input,.rtools select,.utoolbar select,.selx-btn,.selx-search,.utoolbar .usearch,#cfOverlay .cfinput,#ppOverlay .cfinput{transition:border-color var(--tr),box-shadow var(--tr),background var(--tr)}
+.field input:hover:not(:focus),.rtools input:hover:not(:focus){border-color:color-mix(in srgb,var(--navy700) 30%,var(--border))}
+.field input:focus,.field select:focus,.rlabel:focus,#newRoleName:focus,#newTaskLabel:focus,.selx-search:focus,#cfOverlay .cfinput:focus,#ppOverlay .cfinput:focus{box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 16%,transparent)}
+input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--tmuted) 80%,transparent)}
+.utoolbar .usearch:focus-within{box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 16%,transparent)}
+input[type="date"]{color-scheme:light}
+[data-theme="dark"] input[type="date"]{color-scheme:dark}
+/* — مربّعات الاختيار والراديو: لون لكنة موحّد + مؤشّر يد — */
+input[type="checkbox"]:not(.rcap):not(.rtask),input[type="radio"]{accent-color:var(--navy700);cursor:pointer}
+.rcap,.rtask{border-radius:7px;transition:background var(--tr),border-color var(--tr),box-shadow var(--tr)}
+.rcap:hover,.rtask:hover{box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 10%,transparent)}
+/* — الجداول: ترويسة محايدة راقية + صفوف تتنفس + تحويم لطيف — */
+th{background:var(--surface-2);color:var(--tsec);font-size:12.5px;font-weight:700}
+td{font-size:13.5px}
+.rtable-wrap{border-radius:14px;box-shadow:var(--e1)}
+.rtable-wrap th{background:linear-gradient(var(--surface-2),var(--surface-2)) var(--card);color:var(--tsec)}
+.rtable-wrap tbody tr{transition:background .12s linear}
+.rtable-wrap tbody tr:hover{background:color-mix(in srgb,var(--navy100) 65%,transparent)}
+/* — الشرائح والشارات: حدود شعرية تعرّف الحواف على أي خلفية — */
+.tag,.st{box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 16%,transparent);letter-spacing:.1px}
+.appbar .who .r,.whochip .r{box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 16%,transparent)}
+/* — رسائل الحالة: شريط جانبي مميِّز — */
+.status.show{border-inline-start:3px solid currentColor}
+/* — الإشعارات المنبثقة: دخول منزلق + ظل عائم — */
+@keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.98)}}
+.toast{animation:toastIn .22s var(--ease);box-shadow:var(--e3);border-radius:14px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+/* — الحوارات والنوافذ: خلفية مموّهة + دخول مرتفع أنيق — */
+#cfOverlay,#ppOverlay,#mapModal,#printReasonModal,#exportReasonModal,#govModal{-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
+@keyframes cfIn{from{opacity:0;transform:translateY(8px) scale(.97)}}
+#cfOverlay .cfcard,#ppOverlay .cfcard{animation:cfIn .2s var(--ease);box-shadow:var(--e4);border-radius:18px}
+#printReasonModal>div,#exportReasonModal>div,#govModal>div,#mapModal>div{animation:cfIn .2s var(--ease)}
+/* — الأدراج: ظل أعمق + رؤوس أثبت — */
+.udrawer{box-shadow:var(--e4)}
+#notifDrawer .npanel{box-shadow:var(--e4)}
+#notifDrawer .nitem{transition:background .12s linear;border-radius:10px}
+#notifDrawer .nitem:hover{background:color-mix(in srgb,var(--navy100) 55%,transparent)}
+#notifDrawer .ntab,#notifDrawer .nfilt,.ck-filters button{transition:background var(--tr),color var(--tr),border-color var(--tr)}
+#notifDrawer .ntab:hover:not(.on),#notifDrawer .nfilt:hover:not(.on),.ck-filters button:hover:not(.on){border-color:color-mix(in srgb,var(--navy700) 35%,var(--border));color:var(--navy700)}
+/* — القوائم المنبثقة والبحث الشامل: دخول متدرّج + خيارات أنيقة — */
+@keyframes popIn{from{opacity:0;transform:translateY(-5px) scale(.985)}}
+.selx-pop{animation:popIn .15s var(--ease);box-shadow:var(--e3);border-radius:14px}
+.selx-opt{transition:background .1s linear}
+.apop.open{box-shadow:var(--e3)}
+.ck.open{animation:cfIn .18s var(--ease);box-shadow:var(--e4);border-radius:18px}
+.ck-row{transition:background .1s linear}
+/* — الحالات الفارغة: صناديق مقصوصة ودّية — */
+.acempty{border:1.5px dashed var(--border);border-radius:14px;background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.nempty,.ck-empty,.selx-empty{opacity:.9}
+/* — لوحة المظهر وشرائح المقاطع — */
+.aseg button{transition:background var(--tr),color var(--tr),box-shadow var(--tr)}
+.apop{border-radius:16px}
+/* — تفاصيل داكنة: زجاج الترويسة يبقى مقروءًا — */
+[data-theme="dark"] .topbar{background:color-mix(in srgb,var(--card) 74%,transparent)}
 </style>
 </head>
 <body>
