@@ -38,7 +38,7 @@ service cloud.firestore {
     // الافتراضات المدمجة — تطابق DEFAULT_CAPS في التطبيق (محسوبة خفيفة بدل بناء خريطة كبيرة)
     function defCap(role, cap) {
       return role == 'مدير' ? true
-        : role == 'مدير مخزون' ? !(['session.reopen','report.view.own','report.view.location','users.manage','perms.manage','trash.purge'].hasAny([cap]))
+        : role == 'مدير مخزون' ? !(['session.reopen','report.view.own','report.view.location','branch.manage','users.manage','perms.manage','trash.purge'].hasAny([cap]))
         : role == 'عدّاد' ? (cap == 'count')
         : role == 'مطّلع' ? (cap == 'report.view' || cap == 'report.export' || cap == 'pw.change' || cap == 'pw.request')
         : false;
@@ -51,6 +51,7 @@ service cloud.firestore {
     // القرار النهائي لصلاحية — يطابق can() في التطبيق:
     // المالك=كل شيء ← استثناء الفرد ← إعداد الدور ← الافتراضي. ويشترط أن يكون الحساب نشطاً.
     function can(cap) {
+      // مُبسَّطة: تقرأ مستند المستخدم مباشرةً بلا دوال وسيطة متكرّرة (حدّ Firestore ١٠٠٠ تعبير/عملية)
       return meExists() && me().get('active', true) == true && (
         me().get('email','') == OWNER() ||
         ( pExists()
@@ -61,7 +62,9 @@ service cloud.firestore {
     }
     function canManageSessions() {
       return can('session.create') || can('session.assign') || can('session.close')
-          || can('session.review') || can('session.approve') || can('session.reopen') || can('session.delete');
+          || can('session.review') || can('session.approve')
+          || can('session.approve.finance') || can('session.approve.gm')   // موقّعا سلسلة م١٤ (يقيّدان حركة توقيعهما بالسجل)
+          || can('session.reopen') || can('session.delete');
     }
 
     // نطاق الاطّلاع
@@ -77,7 +80,9 @@ service cloud.firestore {
       return authed() && isActive() && (
         s.get('assignedCounters', []).hasAny([uid()]) || s.get('createdBy','') == uid()   // المسار الرخيص أولاً
         || canViewSession(s)
-        || can('session.review') || can('session.close') || can('session.approve') || can('session.reopen')
+        || can('session.review') || can('session.close') || can('session.approve')
+        || can('session.approve.finance') || can('session.approve.gm')   // موقّعا السلسلة يطّلعان على البيانات قبل التوقيع
+        || can('session.reopen')
         || can('trash.purge')
       );
     }
@@ -136,9 +141,18 @@ service cloud.firestore {
         || ( can('session.review')
              && ( (stF()=='review' && (stT()=='reviewed'||stT()=='open')) || (stF()=='reviewed' && stT()=='review') )
              && chk(['status','reviewedBy','reviewedByName','reviewedAt']) )
-        // الاعتماد وقفل الجلسة
+        // الاعتماد وقفل الجلسة (التوقيع الواحد — الوضع الافتراضي، يبقى كما هو)
         || ( can('session.approve') && stF()=='reviewed' && stT()=='approved'
              && chk(['status','approvedBy','approvedByName','approvedByTitle','approvedChairman','approvedAt']) )
+        // سلسلة م١٤ — اعتماد مالي: «تمت المراجعة» → «اعتماد مالي» حصراً (لا قفز)، بتوقيع رقمي
+        || ( can('session.approve.finance') && stF()=='reviewed' && stT()=='fin_approved'
+             && chk(['status','finApprovedBy','finApprovedByName','finApprovedByTitle','finApprovedAt','finSig']) )
+        // سلسلة م١٤ — اعتماد عام وقفل: «اعتماد مالي» → «معتمدة» حصراً (لا يسبق المالي)، بتوقيع ثانٍ وحقول approved* للتوافق
+        || ( can('session.approve.gm') && stF()=='fin_approved' && stT()=='approved'
+             && chk(['status','approvedBy','approvedByName','approvedByTitle','approvedChairman','approvedAt','gmSig']) )
+        // سلسلة م١٤ — رفض/إرجاع مالي: «اعتماد مالي» → «تمت المراجعة» (الرفض يعيد للخطوة السابقة)
+        || ( ( can('session.approve.finance') || can('session.review') ) && stF()=='fin_approved' && stT()=='reviewed'
+             && chk(['status']) )
         // الفتح الاستثنائي (يعيد للتجهيز)
         || ( can('session.reopen') && stF()=='approved' && stT()=='open'
              && chk(['status','started','reopenReason','reopenedBy','reopenedByName','reopenedAt']) )
@@ -176,6 +190,82 @@ service cloud.firestore {
                         && request.resource.data.get('by','') == uid();
         allow update: if false;
         allow delete: if can('trash.purge') && sess(sid).get('deleted', false) == true; // لا يُمحى سجل جلسةٍ حيّة — فقط عند الحذف النهائي من السلة
+      }
+    }
+
+    // ---------- عدّاد ترقيم الحركات (م١٦) — خلف علم warehouseLedger في التطبيق ----------
+    // ترقيم متسلسل ذرّي عبر معاملة runTransaction على counters/movements ({seq:N}).
+    // القراءة لأي مصادَق (كي تعمل المعاملة)، والزيادة لحاملي «قيد حركات المخزون» فقط.
+    match /counters/movements {
+      allow read:   if authed();
+      allow create, update: if authed() && isActive() && can('stock.move');
+      allow delete: if false;
+    }
+
+    // ---------- دفتر الحركات (م١٦) — مجموعة عليا، إلحاق فقط (append-only) ----------
+    // المصدر الوحيد للأرصدة (لا حقل رصيد مخزّن). يتبع نمط سجل الحركة activity المُثبَت:
+    // قراءة لحاملي المخزون/التقارير النشطين؛ إنشاء فقط بواسطة الفاعل نفسه (by==uid) ولحامل stock.move؛
+    // لا تعديل، ولا حذف إلا الحذف النهائي لحامل trash.purge.
+    match /movements/{mid} {
+      allow read:   if authed() && isActive() && (
+                        can('stock.move') || can('warehouse.manage')
+                        || can('report.view') || can('report.view.location') || can('report.view.own') );
+      allow create: if authed() && isActive() && can('stock.move')
+                      && request.resource.data.get('by','') == uid();
+      allow update: if false;
+      allow delete: if can('trash.purge');
+    }
+
+    // ---------- الفروع (م١٧) — خلف علم features.branches في التطبيق ----------
+    // كل بيانات الفرع جردية (جلساته ومؤشّراته مشتقّة من الجلسات). القراءة: مركزي (users.manage) أو مدير الفرع
+    // (branch.manage ومعرّفه = managerUid) أو ضمن نطاق الاطّلاع (report.view أو موقعُه ضمن مستودعات الفرع).
+    // الإنشاء/التعطيل (active)/إعادة تعيين المدير: مركزي فقط. مدير الفرع يحدّث حقولًا محدودة (counters/warehouses)
+    // لا يمسّ active ولا managerUid (يفرضه hasOnly). لا حذف صلب إلا trash.purge (التعطيل = active:false بدل الحذف).
+    // كل إجراء تحكّم مركزي قيدٌ إلحاقيّ في branches/{bid}/activity (إنشاء فقط، لا تعديل).
+    match /branches/{bid} {
+      allow read: if authed() && isActive() && (
+        can('users.manage')
+        || ( can('branch.manage') && resource.data.get('managerUid','') == uid() )
+        || can('report.view')
+        || ( can('report.view.location') && myLocations().hasAny(resource.data.get('warehouses', [])) )
+      );
+      allow create: if isOwner() || can('users.manage');
+      allow update: if isOwner() || can('users.manage')
+        || ( can('branch.manage') && resource.data.get('managerUid','') == uid()
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['counters','warehouses','updatedBy','updatedByName','updatedAt']) );
+      allow delete: if can('trash.purge'); // لا حذف صلب — التعطيل بدل الحذف؛ الحذف النهائي لحامل trash.purge فقط
+
+      // سجلّ التحكّم المركزي (تفعيل/تعطيل) — إلحاقيّ فقط
+      match /activity/{aid} {
+        allow read: if authed() && isActive() && (
+          can('users.manage')
+          || ( can('branch.manage') && get(/databases/$(database)/documents/branches/$(bid)).data.get('managerUid','') == uid() )
+          || can('report.view')
+        );
+        allow create: if authed() && isActive() && ( can('users.manage') || can('branch.manage') )
+                        && request.resource.data.get('by','') == uid();
+        allow update: if false;
+        allow delete: if can('trash.purge');
+      }
+    }
+
+    // ---------- كتالوج المنتجات (م١٥) — خلف علم features.productCatalog في التطبيق ----------
+    // بطاقة واحدة لكل منتج = مصدر الحقيقة (بيانات مرجعية غير حسّاسة: هوية/تصنيف/وحدات/دورة حياة/تحليل).
+    // القراءة: أي مستخدم نشط (مرجعية الكتالوج ليست حسّاسة كالعدّات). الكتابة (إنشاء/تحديث): حاملو warehouse.manage
+    //   (يعيد استعمال صلاحية المستودعات القائمة — بلا صلاحية جديدة، إبقاءً لـ can() خفيفة). دورة الحياة بالحالة (status) لا بالحذف؛
+    //   لا حذف صلب إلا الحذف النهائي لحامل trash.purge. التاريخ products/{pid}/history ملحق-فقط بنمط activity المعتمد:
+    //   إنشاء بواسطة الفاعل نفسه (by==uid) ولحامل warehouse.manage، لا تعديل، وحذف فقط للحذف النهائي.
+    match /products/{pid} {
+      allow read:   if authed() && isActive();
+      allow create, update: if can('warehouse.manage');
+      allow delete: if can('trash.purge');
+
+      match /history/{hid} {
+        allow read:   if authed() && isActive();
+        allow create: if authed() && isActive() && can('warehouse.manage')
+                        && request.resource.data.get('by','') == uid();
+        allow update: if false;
+        allow delete: if can('trash.purge');
       }
     }
 

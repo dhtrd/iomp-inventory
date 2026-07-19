@@ -26,7 +26,12 @@ function __seed(){
   (__SC.sessions||[]).forEach(s=>{ const id=s.id||('s'+(__uidSeq++)); __store['sessions/'+id]=__clone(Object.assign({},s)); delete __store['sessions/'+id].__chunks;
     (s.__chunks||[]).forEach((ch,i)=>{ __store['sessions/'+id+'/snapshot/chunk_'+String(i).padStart(4,'0')]={items:ch}; });
     (s.__counts||[]).forEach(cn=>{ __store['sessions/'+id+'/counts/'+(cn.code)]=cn; });
+    (s.__activity||[]).forEach((a,i)=>{ __store['sessions/'+id+'/activity/act_'+String(i).padStart(4,'0')]=__clone(a); });
   });
+  (__SC.branches||[]).forEach(b=>{ const id=b.id||('b'+(__uidSeq++)); __store['branches/'+id]=__clone(Object.assign({},b)); }); // ر٨-ب: بذر الفروع (م١٧)
+  (__SC.products||[]).forEach(p=>{ const id=p.id||('p'+(__uidSeq++)); __store['products/'+id]=__clone(Object.assign({},p)); delete __store['products/'+id].__history; // ر٩: بذر الكتالوج (م١٥)
+    (p.__history||[]).forEach((h,i)=>{ __store['products/'+id+'/history/hist_'+String(i).padStart(4,'0')]=__clone(h); }); });
+  (__SC.movements||[]).forEach((mv)=>{ const id=mv.id||('mv'+(__uidSeq++)); __store['movements/'+id]=__clone(mv); }); // ر٩: بذر الحركات لتصنيف ABC/XYZ
 }
 function __fireDoc(path){ __listeners.filter(l=>l.kind==='doc'&&l.path===path).forEach(l=>{ try{ l.cb(__docSnap(path)); }catch(e){} }); }
 function __fireCol(path){ // path is a written doc path; fire col listeners whose col is its direct parent
@@ -87,6 +92,122 @@ window.__openSession = sid=>openSession(sid);
 window.__del = sid=>deleteSession(sid);
 window.__editUser = uid=>renderUserEdit(uid);
 window.__openReport = sid=>openVarianceReport(sid,'home');
+// ر٧: خطاطيف شاشة التقارير الموحّدة (م١٩)
+window.__repxReady = ()=>_repxReady;
+window.__repxModel = name=>repxModel(name);
+window.__repxCsv = name=>repxBuildCsv(name);
+window.__repxPrintHtml = name=>{ repxBuildPrint(name); return document.getElementById('repPrintArea').innerHTML; };
+window.__repxSessIds = ()=>repxScopedSessions().map(s=>s.id);
+window.__repxActive = ()=>repxActive;
+// ر٨: خطاطيف دفتر الحركات وهيكل المستودعات (م١٦) — إضافية بجانب __repx*
+window.__featuresLedgerOn = ()=>featuresLedgerOn();
+window.__ledReady = ()=>_ledReady;
+window.__ledMoves = ()=>ledMoves.map(x=>Object.assign({},x));
+window.__ledSeed = arr=>{ ledMoves=(arr||[]).map(x=>Object.assign({},x)); _ledReady=true; };
+window.__ledLoad = ()=>ledLoad().then(a=>{ ledMoves=a; return a; });
+window.__ledFold = moves=>ledFold(moves||ledMoves);
+window.__ledBalances = ()=>ledFold(ledMoves);
+window.__ledBalance = (loc,sku)=>ledBalance(ledMoves,loc,sku);
+window.__ledMove = m=>ledRecordMove(m);
+window.__ledValidate = m=>ledValidate(m, ledActiveBins(), ledFold(ledMoves));
+window.__ledNextRef = ()=>ledNextRef();
+window.__ledKpis = cat=>ledKpis(ledMoves, ledActiveBins(), cat||ledCatalog);
+window.__ledSearch = q=>ledSearch(ledMoves,q);
+window.__ledBins = ()=>ledActiveBins();
+window.__ledTop = n=>ledTopLocations(ledMoves,ledActiveBins(),n);
+window.__ledRender = ()=>{ try{ ledRenderAll(); }catch(e){} };
+window.__ledSep = ()=>LED_SEP;
+// محرّر الهيكل (يتخطّى prompt في الاختبار)
+window.__ledSetWhCode = (w,c)=>ledSetWhCode(w,c);
+window.__ledAddZone = (w,i,n)=>ledAddZone(w,i,n);
+window.__ledAddShelf = (w,z,i,n)=>ledAddShelf(w,z,i,n);
+window.__ledAddBin = (w,z,s,i,cap)=>ledAddBin(w,z,s,i,cap);
+window.__ledSetCap = (w,z,s,b,cap)=>ledSetCap(w,z,s,b,cap);
+window.__ledRemoveBin = (w,z,s,b)=>ledRemoveBin(w,z,s,b);
+// ر٨-ب: خطاطيف إدارة الفروع (م١٧) — إضافية بجانب __led*
+window.__featuresBranchesOn = ()=>featuresBranchesOn();
+window.__brxReady = ()=>_brxReady;
+window.__brxLoad = ()=>brxLoad().then(()=>true);
+window.__brxIsCentral = ()=>brxIsCentral();
+window.__brxModels = ()=>brxAllModels();
+window.__brxBranchModel = bid=>{ const b=brxBranches.find(x=>x.id===bid); return b?brxBranchModel(b):null; };
+window.__brxVisible = ()=>brxVisibleBranches().map(b=>b.id);
+window.__brxBest = ()=>brxBestByAccuracy();
+window.__brxStats = ()=>brxStats();
+window.__brxActive = bid=>brxBranchActive(bid);
+window.__brxSetActive = (bid,a)=>brxSetActive(bid,a);
+window.__brxCanCreate = bid=>brxCanCreateInBranch(bid);
+window.__brxSessSum = ()=>brxSessSum.map(x=>Object.assign({},x));
+// ر٩: خطاطيف كتالوج المنتجات (م١٥) — إضافية بجانب __brx*
+window.__featuresProductCatalogOn = ()=>featuresProductCatalogOn();
+window.__pxReady = ()=>_pxReady;
+window.__pxLoad = ()=>pxLoad().then(()=>true);
+window.__pxProducts = ()=>pxProducts.map(p=>Object.assign({},p));
+window.__pxGet = sku=>{ const p=pxFind(sku); return p?Object.assign({},p):null; };
+window.__pxCreate = card=>pxCreateCard(card);
+window.__pxSave = (sku,patch)=>pxSaveCard(sku,patch);
+window.__pxSetStatus = (sku,status)=>pxSetStatus(sku,status);
+window.__pxAddVariant = (sku,name)=>pxAddVariant(sku,name);
+window.__pxAddAttr = (sku,k,v)=>pxAddAttr(sku,k,v);
+window.__pxAddImage = (sku,url)=>pxAddImage(sku,url);
+window.__pxMigrate = item=>pxMigrateManualItem(item);
+window.__pxHistory = sku=>pxHistoryOf(sku);
+window.__pxEligible = ()=>pxNewSessionEligible().map(p=>p.sku);
+window.__pxSeedMoves = arr=>{ pxMoves=(arr||[]).map(x=>Object.assign({},x)); };
+window.__pxClassify = ()=>pxClassifyAll();
+window.__pxCardClass = sku=>pxCardClass(sku);
+window.__pxPackToBase = (pack,packs)=>pxPackToBase(pack,packs);
+window.__pxBaseToPack = (pack,base)=>pxBaseToPack(pack,base);
+window.__pxBarcodeSvg = code=>pxBarcodeSvg(code);
+window.__pxQrSvg = sku=>pxQrSvg(sku);
+window.__pxPid = sku=>pxPid(sku);
+window.__pxRender = ()=>{ try{ pxRenderAll(); }catch(e){} };
+// م١٨: خطاطيف مركز الإدارة والإعدادات والنسخ/السلامة وتسوية العدّ
+window.__appSettings = ()=>appSettings();
+window.__acBuildBackup = ()=>acBuildBackup();
+window.__acRestore = j=>acRestoreBackup(j);
+window.__acIntegrity = ()=>acRunIntegrity();
+window.__acLoadActivity = ()=>acLoadActivity(100);
+window.__deriveNotifs = ()=>deriveNotifs(_notifCache);
+window.__resetItem = code=>resetItem(code);
+window.__removeEntry = (code,i)=>removeEntry(code,i);
+window.__addEntry = (code,v)=>addEntry(code,v);
+window.__curCounts = ()=>Object.keys(curCounts||{});
+// ر١٠ (م٢٤): خطاطيف العدّ دون اتصال — تُمرَّر تجربة الطابور/المزامنة عبر بديل localStorage (IndexedDB محجوب على file://)
+window.__featuresOfflineOn = ()=>featuresOfflineOn();
+window.__offline = {
+  setOnline:(b)=>{ _forcedOnline = (b===null? null : !!b); offlineUpdateChip(); return (b? (featuresOfflineOn()? offlineFlush(false) : Promise.resolve()) : Promise.resolve()); },
+  isOnline:()=>netOnline(),
+  queue:()=>offlineQueueGet(),
+  len:()=>offlineQueueGet().then(q=>q.length),
+  flush:()=>offlineFlush(true),
+  deviceId:()=>offlineDeviceId(),
+  enqueue:(op)=>offlineEnqueueAndReflect(op),
+  syncStatus:()=>offlineGetSyncStatus(),
+  setSyncStatus:(s)=>offlineSetSyncStatus(s),
+  failNext:(b)=>{ _offlineForceFail = !!b; },
+  backend:()=>offlineStore.backend(),
+  refreshLen:()=>offlineRefreshLen()
+};
+window.__ppShown = ()=>{ const o=document.getElementById('ppOverlay'); return !!(o && o.style.display==='flex'); };
+// ر١١: خطاطيف النسخ الاحتياطي إلى Dropbox — إضافية بجانب __offline (كل HTTP يمرّ عبر dbxFetch الذي تعترضه window.__dbxMock)
+window.__featuresDropboxOn = ()=>featuresDropboxOn();
+window.__dbxTick = ()=>dbxAutoTick(true); // force: يتخطّى كابح المحاولة فقط — الشروط والاستحقاق كما هي
+window.__dbxAuthUrl = ()=>dbxAuthStart(); // يعيد الرابط الذي سيُنتقَل إليه (null بلا App Key)
+window.__dbx = {
+  connected:()=>dbxConnected(),
+  stored:()=>dbxStored(),
+  token:()=>dbxAccessToken(),
+  backup:()=>dbxRunBackup('manual'),
+  buildFull:()=>dbxBuildFullBackup(),
+  list:()=>dbxListBackups(),
+  restore:(p)=>dbxRestoreConfig(p),
+  status:()=>dbxGetStatus(),
+  account:()=>dbxAccount(),
+  disconnect:()=>dbxDisconnect(),
+  handleRedirect:()=>dbxHandleRedirect()
+};
+window.__syncStrip = ()=>{ try{ syncStripRefresh(); return true; }catch(e){ return false; } };
 window.__ready = true;
 `;
 

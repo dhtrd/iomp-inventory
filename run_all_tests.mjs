@@ -1,6 +1,6 @@
 // مشغّل حزمة اختبارات التطبيق الحي — يفشل عند أول ملف أحمر
 import { execSync } from 'node:child_process';
-const FILES=['test_account.mjs','test_assign.mjs','test_locdel.mjs','test_perms.mjs','test_rolelabels.mjs','test_roles.mjs','test_scope.mjs','test_shell.mjs','test_toast.mjs','test_dialogs_live.mjs','test_r3_lazy_prompt.mjs','test_r4_search_sort.mjs','test_trash.mjs','test_useredit.mjs'];
+const FILES=['test_account.mjs','test_assign.mjs','test_locdel.mjs','test_perms.mjs','test_rolelabels.mjs','test_roles.mjs','test_scope.mjs','test_shell.mjs','test_toast.mjs','test_dialogs_live.mjs','test_r3_lazy_prompt.mjs','test_r4_search_sort.mjs','test_trash.mjs','test_useredit.mjs','test_chain_live.mjs','test_notifcenter_live.mjs','test_reports_live.mjs','test_ledger_live.mjs','test_branches_live.mjs','test_products_live.mjs','test_settings_live.mjs','test_offline_live.mjs','test_select_ux.mjs','test_dropbox_live.mjs'];
 let total=0, passed=0, failed=[];
 for(const f of FILES){
   try{
