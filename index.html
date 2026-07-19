@@ -2588,12 +2588,15 @@ function docSignatories(){
 // المحطّة ٤ (مُنشئ المستندات الرسمية): قوالب محاضر قابلة للتحرير (عنوان/تمهيد/فقرات مرقّمة) بمتغيّرات نائبة — settings.docTemplates[reasonKey]. قابلة للتوسّع.
 const DOC_VARS=[{k:'{company}',d:'اسم الشركة'},{k:'{document}',d:'اسم المستند'},{k:'{session}',d:'اسم الجلسة'},{k:'{location}',d:'الموقع/المستودع'},{k:'{date}',d:'التاريخ'},{k:'{items}',d:'عدد الأصناف'},{k:'{counted}',d:'المعدود'},{k:'{netVar}',d:'صافي الفروقات'},{k:'{approver}',d:'المعتمِد'},
   {k:'{committee}',d:'أعضاء لجنة الجرد'},{k:'{newResp}',d:'المسؤول الجديد (إن وجد)'},{k:'{oldResp}',d:'المسؤول السابق (إن وجد)'},{k:'{branchMgr}',d:'مسؤول الفرع (إن سُجّل)'},{k:'{totalCost}',d:'إجمالي التكلفة الدفترية'},{k:'{totalActual}',d:'إجمالي قيمة الفعلي'},{k:'{onHand}',d:'إجمالي الكمية في اليد'}];
+// التاريخ المعتمد للمحاضر: تاريخ بدء العد الفعلي (startedAt) — لا تاريخ الطباعة؛ وبغيابه تاريخ اليوم
+function officialDate(){ const t=repSess&&repSess.startedAt; if(!t) return new Date().toLocaleDateString('en-GB');
+  const d=(t&&typeof t.toDate==='function')?t.toDate():new Date(t.__ts||t.seconds*1000||t); return isNaN(+d)?new Date().toLocaleDateString('en-GB'):d.toLocaleDateString('en-GB'); }
 function docVarCtx(reasonKey,rows){ const s2=summarize(rows||[]); const R=PRINT_REASONS[reasonKey]||PRINT_REASONS.detailed;
   const cp=(repSess&&repSess.custodyPrev)||{}, cn=(repSess&&repSess.custodyNext)||{};
   const who=x=>x&&x.name?(x.name+(x.title?' — '+x.title:'')):'—';
   const qty=(rows||[]).reduce((a,r)=>a+(Number(r.counted)||0),0);
   return { '{company}':'شركة الضبيبي التجارية','{document}':R.label,'{session}':(repSess&&repSess.name)||'','{location}':(repSess&&repSess.location)||'—',
-    '{date}':new Date().toLocaleDateString('en-GB'),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':fmt(round2(s2.netVar)),'{approver}':((repSess&&repSess.approvedByName)||'—'),
+    '{date}':officialDate(),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':fmt(round2(s2.netVar)),'{approver}':((repSess&&repSess.approvedByName)||'—'),
     '{committee}':docSignatories().map(x=>x.name?(x.label+': '+x.name):x.label).join('، ')||'—', // موقّعو الجلسة المسجّلون (مسمى: اسم) لهم الأولوية
     '{newResp}':who(cn),'{oldResp}':who(cp),
     '{branchMgr}':((repSess&&repSess.branchManagerName)||'—'),
@@ -3478,7 +3481,7 @@ function buildPrintReport(reasonKey){
   let rows=filteredReportRows(); if(R.varianceOnly)rows=rows.filter(r=>r.isCounted&&Number(r.diff||0)!==0); else if(R.countedOnly)rows=rows.filter(r=>r.isCounted); // ملخّص الفروقات = المعدود ذو الفرق الفعلي؛ الاستلام/العهدة = المعدود
   const cols=(reasonKey==='detailed')?docColumns():R.cols; // المحطّة ٣: المفصّل يحترم أعمدة الإعدادات
   const tpl=docTemplate(reasonKey), vctx=docVarCtx(reasonKey,rows); // المحطّة ٤: قالب المستند القابل للتحرير
-  const dateStr=new Date().toLocaleDateString('en-GB');
+  const dateStr=officialDate(); // التاريخ المعتمد = بدء العد الفعلي
   const pc=printCfg(); // المحطّة ٣: المحاضر تحترم إعدادات المخرجات المركزية
   const logo=printLogoHtml(); // الشعار: شعار مخصّص/افتراضي + اسم الشركة (يحترم «إظهار الشعار»)
   const customHead=pc.headerText?'<div style="font-size:12px;color:#1F3864;font-weight:600;margin-bottom:2px">'+esc(pc.headerText)+'</div>':'';
@@ -3534,8 +3537,11 @@ function buildPrintReport(reasonKey){
 // محضر الاستلام متاح عند تحديد المُسلِّم والمُستلِم؛ ملخّص الفروقات متاح بعد الاعتماد
 function handoverReady(){ return !!(repSess && repSess.custodyPrev && repSess.custodyPrev.name && repSess.custodyNext && repSess.custodyNext.name); }
 function reasonAvailability(pfx){ const approved=!!(repSess&&repSess.status==='approved'); const ho=handoverReady();
-  const vs=$(pfx==='pr'?'prVarSum':'xVarSum'); if(vs)vs.style.display=approved?'':'none';
-  const hv=$(pfx==='pr'?'prHandover':'xHandover'); if(hv)hv.style.display=ho?'':'none'; }
+  // ظاهرة دائمًا — معطَّلة مع سبب واضح قبل تحقق شرطها (بدل الإخفاء المُلغِز)
+  const set=(el,on,why)=>{ if(!el)return; el.style.display=''; el.disabled=!on; el.style.opacity=on?'':'.55'; el.title=on?'':why;
+    const m=el.querySelector('.muted'); if(m){ if(!on){ if(m.textContent.indexOf('⏳')<0) m.textContent=' — ⏳ '+why; } } };
+  set($(pfx==='pr'?'prVarSum':'xVarSum'),approved,'يتاح بعد اعتماد الجلسة');
+  set($(pfx==='pr'?'prHandover':'xHandover'),ho,'يتاح بعد تسجيل المسؤولَين السابق/الجديد'); }
 function openPrintDialog(){
   if(!can('report.export'))return;
   const mo=$('printReasonModal'); if(!mo)return;

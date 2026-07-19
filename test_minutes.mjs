@@ -79,8 +79,9 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'open'})});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
   await page.evaluate(()=>window.__openPrintDialog()); await page.waitForTimeout(120);
-  const d=await page.evaluate(()=>({vs:window.__disp('prVarSum'),ho:window.__disp('prHandover')}));
-  ok('M7 دون اعتماد ولا استلام ⇒ الزرّان مخفيّان', d.vs==='none'&&d.ho==='none', JSON.stringify(d));
+  const d=await page.evaluate(()=>({vsD:document.getElementById('prVarSum').disabled,hoD:document.getElementById('prHandover').disabled,
+    why:(document.getElementById('prVarSum').title||'')+(document.getElementById('prHandover').title||'')}));
+  ok('M7 دون اعتماد ولا استلام ⇒ الزرّان ظاهران معطَّلين مع سبب واضح', d.vsD===true&&d.hoD===true&&d.why.includes('يتاح'), JSON.stringify(d));
   await page.close(); }
 
 // ===== M8 — تصدير إكسل مُرشَّح حسب السبب =====
