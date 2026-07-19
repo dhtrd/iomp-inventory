@@ -971,7 +971,7 @@ $('forgotBtn').onclick=()=>{ st('loginStatus','info','إعادة تعيين كل
 
 // ===== AUTH STATE =====
 onAuthStateChanged(auth, async(user)=>{
-  if(!user){myProfile=null;stopPermListener();show('loginView');$('loginBtn').disabled=false;hideSt('loginStatus');return;}
+  if(!user){myProfile=null;idleStop();stopPermListener();show('loginView');$('loginBtn').disabled=false;hideSt('loginStatus');return;}
   try{
     const ref=doc(db,'users',user.uid); let snap=await getDoc(ref);
     if(!snap.exists()){
@@ -1020,7 +1020,7 @@ async function enterApp(){show('appView');$('whoEmail').textContent=myProfile.em
   await loadPermConfigOnce();
   applyBrandMarks(); // الشعار: طبع الشعار (افتراضي/مخصّص) على العلامات الظاهرة بعد تحميل الإعداد
   { const lt=sysDefaults().landingTab; if(lt && adminTabsAvailable().indexOf(lt)>=0) adminTab=lt; } // المحطّة ٦: لوحة البداية الافتراضية (إن كانت متاحة للمستخدم)
-  startPermListener(); renderNav(); route(); reconcileAppearance(); notifInit(); offlineInit(); if(featuresDropboxOn())dbxAutoInit();} // ر١١: مؤقّتات النسخ التلقائي تُنشأ فقط حين العلم مفعّل
+  startPermListener(); renderNav(); route(); reconcileAppearance(); idleInit(); notifInit(); offlineInit(); if(featuresDropboxOn())dbxAutoInit();} // ر١١: مؤقّتات النسخ التلقائي تُنشأ فقط حين العلم مفعّل
 async function loadPermConfigOnce(){ try{ const d=await getDoc(doc(db,'config','permissions')); permConfig=d.exists()?(d.data()||{roles:{},users:{}}):{roles:{},users:{}}; }catch(e){ permConfig={roles:{},users:{}}; } }
 function startPermListener(){ if(permUnsub)return; _permInit=false;
   try{ permUnsub=onSnapshot(doc(db,'config','permissions'),(d)=>{ permConfig=d.exists()?(d.data()||{roles:{},users:{}}):{roles:{},users:{}};
@@ -1744,6 +1744,10 @@ function renderAdminCenter(c){
     '<div class="card"><h2>تخصيص النظام (الافتراضات)</h2><p class="muted">افتراضاتٌ تُطبَّق فورًا بلا تعديل كود — تُحفظ في <code>config/permissions.settings.defaults</code>.</p>'+
     '<div class="field"><label>لوحة البداية الافتراضية</label><select id="pzLanding">'+[['home','لوحة المعلومات'],['sessions','جلسات الجرد'],['reports','التقارير'],['warehouses','المستودعات'],['admin','مركز الإدارة']].map(x=>'<option value="'+x[0]+'"'+((sysDefaults().landingTab||'home')===x[0]?' selected':'')+'>'+esc(x[1])+'</option>').join('')+'</select><div class="muted" style="font-size:12px">تُطبَّق لكل مستخدم عند الدخول (إن كانت متاحة لدوره).</div></div>'+
     chk('pzAutoReport',!!sysDefaults().autoOpenReport,'فتح التقرير الافتراضي مباشرةً عند دخول شاشة التقارير (بدل قائمة التقارير)')+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:8px">'+
+    '<div class="field"><label>مهلة السكون (دقائق — ٠ = تعطيل)</label><input id="pzIdleMin" type="number" min="0" step="1" value="'+esc(idleCfg().minutes)+'"><div class="muted" style="font-size:12px">خروج تلقائي بعد هذه المدة من عدم النشاط. الافتراضي ٣٠.</div></div>'+
+    '<div class="field"><label>مدة تنبيه الخروج (ثوانٍ)</label><input id="pzIdleWarn" type="number" min="3" step="1" value="'+esc(idleCfg().warnSeconds)+'"><div class="muted" style="font-size:12px">عدّ تنازلي قبل الخروج مع زر «متابعة الجلسة». الافتراضي ١٠.</div></div>'+
+    '</div>'+
     '<div style="margin-top:10px"><button class="btn" id="acSavePersonalize">حفظ التخصيص</button></div><div class="status" id="pzStatus"></div></div>'+
     // 2) الأعلام والميزات
     '<div class="card"><h2>الأعلام والميزات</h2><p class="muted">مجمّعة هنا للتحكّم السريع. هي الأعلام نفسها في «الصلاحيات ← ميزات اختيارية» (تشترك في وثيقة الإعداد ودوالّ الحفظ) — الحفظ من أيّ مكان يسري على الاثنين.</p>'+
@@ -1856,7 +1860,8 @@ async function acSaveDocTemplate(){ if(!can('perms.manage'))return;
 // المحطّة ٦: حفظ تخصيص النظام (افتراضات) في settings.defaults
 async function acSavePersonalize(){ if(!can('perms.manage'))return;
   const defaults=Object.assign({},sysDefaults(),{ landingTab:($('pzLanding')?$('pzLanding').value:'home'), autoOpenReport:!!($('pzAutoReport')&&$('pzAutoReport').checked) });
-  const settings=Object.assign({},appSettings(),{defaults:defaults});
+  const idle={ minutes:Math.max(0,Number($('pzIdleMin')&&$('pzIdleMin').value)||0), warnSeconds:Math.max(3,Number($('pzIdleWarn')&&$('pzIdleWarn').value)||10) };
+  const settings=Object.assign({},appSettings(),{defaults:defaults,idle:idle});
   st('pzStatus','info','جارٍ الحفظ…',true);
   try{ await setDoc(doc(db,'config','permissions'),{settings:settings,updatedBy:auth.currentUser.uid,updatedByName:myProfile.name||'',updatedAt:serverTimestamp()},{merge:true});
     permConfig=permConfig||{roles:{},users:{}}; permConfig.settings=settings; st('pzStatus','ok','حُفظ التخصيص ✓ — يُطبَّق فورًا (ولوحة البداية عند الدخول القادم).');
@@ -1885,6 +1890,24 @@ async function acSaveBranding(){ if(!can('perms.manage'))return;
   }catch(err){ st('brStatus','err','تعذّر الحفظ: '+errAr(err.code||err.message)); } }
 // العودة إلى الشعار الافتراضي (إزالة الشعار المخصّص)
 async function acClearLogo(){ if(!can('perms.manage'))return; _brandingLogoData=''; await acSaveBranding(); }
+/* ===== مهلة السكون: خروج تلقائي بعد خمول (افتراضي ٣٠ دقيقة) بتنبيه عدّ تنازلي (افتراضي ١٠ ثوانٍ) —
+   الإعداد في config/permissions.settings.idle بأثرٍ فوري، و«٠ دقائق» = تعطيل. المتابعة بزرٍ صريح. ===== */
+function idleCfg(){ const s=appSettings().idle||{}; const m=(s.minutes==null)?30:(Number(s.minutes)||0); const w=(s.warnSeconds==null)?10:Math.max(3,Number(s.warnSeconds)||10); return {minutes:m,warnSeconds:w}; }
+let _idleT=null,_idleCd=null,_idleWrap=null,_idleWired=false;
+function idleDismiss(){ if(_idleCd){clearInterval(_idleCd);_idleCd=null;} if(_idleWrap){try{_idleWrap.remove();}catch(e){} _idleWrap=null;} }
+function idleStop(){ if(_idleT){clearTimeout(_idleT);_idleT=null;} idleDismiss(); }
+function idleReset(){ idleStop(); const c=idleCfg(); if(!myProfile||!(c.minutes>0))return;
+  _idleT=setTimeout(idleWarn, Math.max(1000, c.minutes*60000 - c.warnSeconds*1000)); }
+function idleWarn(){ if(!myProfile||_idleWrap)return; const c=idleCfg(); let left=c.warnSeconds;
+  _idleWrap=document.createElement('div'); _idleWrap.id='idleWarn';
+  _idleWrap.style.cssText='position:fixed;inset:0;z-index:10001;background:rgba(17,24,39,.55);display:flex;align-items:center;justify-content:center;padding:16px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
+  _idleWrap.innerHTML='<div class="card" style="max-width:380px;width:100%;text-align:center;margin:0"><h2 style="margin-bottom:6px">⏳ ما زلت هنا؟</h2><p class="muted" style="font-size:14px">لعدم النشاط سيُسجَّل خروجك تلقائيًّا خلال</p><div id="idleCount" style="font-size:34px;font-weight:800;color:var(--danger);margin:8px 0 14px;font-variant-numeric:tabular-nums">'+left+'</div><button class="btn block" id="idleStay">متابعة الجلسة</button></div>';
+  document.body.appendChild(_idleWrap);
+  const el=_idleWrap.querySelector('#idleCount'); _idleWrap.querySelector('#idleStay').onclick=()=>idleReset();
+  _idleCd=setInterval(()=>{ left--; if(el)el.textContent=left;
+    if(left<=0){ idleDismiss(); window.__idleOut=true; try{ signOut(auth); }catch(e){} } },1000); }
+function idleInit(){ idleReset(); if(_idleWired)return; _idleWired=true;
+  ['pointerdown','keydown','touchstart','wheel'].forEach(ev=>document.addEventListener(ev,()=>{ if(_idleWrap)return; idleReset(); },{passive:true})); }
 // مجموع تحقّقي حتمي (FNV-1a) على نصّ الحمولة — يكشف التلف/التعديل في ملفّ النسخة
 function acChecksum(str){ let h=0x811c9dc5>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return 'FNV-'+(h>>>0).toString(16).padStart(8,'0').toUpperCase(); }
 // يبني نصّ النسخة الاحتياطية: إعدادات+أعلام+أدوار+مستودعات من config/permissions، مع طابع ومجموع تحقّقي

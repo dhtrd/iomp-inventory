@@ -184,6 +184,11 @@ window.__docSubst = (t,rk)=>docSubst(t, docVarCtx(rk||'committee', [])); // ال
 window.__acSaveDocTpl = ()=>acSaveDocTemplate();
 window.__sysDefaults = ()=>sysDefaults(); // المحطّة ٦
 window.__acSavePersonalize = ()=>acSavePersonalize();
+// مهلة السكون: خطاطيف الاختبار — إظهار التنبيه فورًا دون انتظار المهلة
+window.__idleCfg = ()=>idleCfg();
+window.__idleWarnNow = ()=>idleWarn();
+window.__idleActive = ()=>!!document.getElementById('idleWarn');
+window.__idleReset = ()=>idleReset();
 // الهوية والشعار: خطاطيف اختبار الشعار (افتراضي/مخصّص) والترويسة والحفظ والطبع على العلامات
 window.__brandingCfg = ()=>brandingCfg();
 window.__brandMarkHtml = ()=>brandMarkHtml();
