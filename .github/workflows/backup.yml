@@ -1,0 +1,21 @@
+name: نسخ احتياطي سحابي تلقائي (Dropbox)
+on:
+  schedule:
+    - cron: '0 2 * * *'   # يوميًّا ٢ فجرًا UTC — من السحابة ذاتيًّا، بلا أي جهاز
+  workflow_dispatch:        # وتشغيل يدوي من تبويب Actions متى شئت
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install firebase-admin
+      - name: تفريغ Firestore ورفع النسخة إلى Dropbox
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
+          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
+          DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+        run: node cloud_backup.mjs
