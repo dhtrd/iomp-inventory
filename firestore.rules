@@ -51,11 +51,11 @@ service cloud.firestore {
     // القرار النهائي لصلاحية — يطابق can() في التطبيق:
     // المالك=كل شيء ← استثناء الفرد ← إعداد الدور ← الافتراضي. ويشترط أن يكون الحساب نشطاً.
     function can(cap) {
-      return meExists() && isActive() && (
-        isOwner() ||
+      return meExists() && me().get('active', true) == true && (
+        me().get('email','') == OWNER() ||
         ( pExists()
-          ? ( pData().get('users', {}).get(uid(), {}).get(cap, roleCap(myRole(), cap)) == true )
-          : ( defCap(myRole(), cap) == true )
+          ? ( pData().get('users', {}).get(uid(), {}).get(cap, pData().get('roles', {}).get(me().get('role',''), {}).get(cap, defCap(me().get('role',''), cap))) == true )
+          : ( defCap(me().get('role',''), cap) == true )
         )
       );
     }
