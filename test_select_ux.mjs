@@ -48,8 +48,11 @@ const owner = () => ({ user:{uid:'u_owner',email:'a2@dhtrd.com'}, profile:prof('
   ok('U1 تنسيق عام: appearance:none + سهم SVG على اليسار + مساحة تمنع التداخل',
      !!info && info.ap==='none' && /svg/i.test(info.bg) && info.pl>=30,
      JSON.stringify(info && {ap:info.ap, hasSvg:/svg/i.test(info.bg), pl:info.pl}));
-  // الوضع الداكن
-  await page.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+  // الوضع الداكن — تُعطَّل الانتقالات أولًا كي تكون القراءة حتمية عبر إصدارات المحرّك:
+  // خلفية select تنتقل ١٥٠مللي عند قلب الثيم بينما color-scheme يقلب فورًا، وقراءة منتصف الانتقال
+  // تعتمد على توقيت إطارات المحرّك (كروميوم الأحدث يبدأ الانتقال عند الإطار التالي ⇒ كانت تُقرأ قيمة البداية البيضاء في CI)
+  await page.evaluate(()=>{ const st=document.createElement('style'); st.textContent='*{transition:none!important;animation:none!important}'; document.head.appendChild(st);
+    document.documentElement.setAttribute('data-theme','dark'); });
   await page.waitForTimeout(40);
   const dk = await page.evaluate(()=>{ const s=document.getElementById('ue_role'); const cs=getComputedStyle(s);
     return { scheme:cs.colorScheme, bg:cs.backgroundColor }; });
