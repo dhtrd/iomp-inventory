@@ -92,6 +92,11 @@ await T('العدّاد المكلَّف: يعدّ في جلسة مفتوحة م
 await T('العدّاد غير المكلَّف: يُمنع من العدّ', assertFails(setDoc(doc(db('u_ct'), 'sessions/s_openB/counts/c2'), { code:'B', qty:1 })));
 await T('العدّ في جلسة قيد المراجعة: مُنع', assertFails(setDoc(doc(db('u_ct'), 'sessions/s_rev/counts/c2'), { code:'B', qty:1 })));
 
+// ---- إدارة ما نُسي (بعد البدء) ----
+await T('ما نُسي: المدير يضيف عدّادين وموقّعين بعد البدء', assertSucceeds(updateDoc(doc(db('u_owner'), 'sessions/s_open'), { assignedCounters:['u_ct','u_x2'], assignedNames:['عدّاد','إضافي'], signatories:[{title:'رئيس اللجنة',name:'خالد'}] })));
+await T('ما نُسي: العدّاد ممنوع من التعديل', assertFails(updateDoc(doc(db('u_ct'), 'sessions/s_open'), { signatories:[{title:'س',name:'ص'}] })));
+await T('ما نُسي: دمج تغيير الحالة معها مرفوض', assertFails(updateDoc(doc(db('u_owner'), 'sessions/s_open'), { signatories:[], started:false })));
+
 // ---- تحوّلات الجلسة ----
 await T('إغلاق للمراجعة: المالك', assertSucceeds(updateDoc(doc(db('u_owner'), 'sessions/s_open'), { status:'review', closedBy:'u_owner', closedByName:'م', closedAt:new Date() })));
 await T('إغلاق للمراجعة: العدّاد مُنع', assertFails(updateDoc(doc(db('u_ct'), 'sessions/s_openB'), { status:'review', closedBy:'u_ct' })));

@@ -2399,8 +2399,41 @@ function renderCountingShell(){
   if($('camCloseBtn'))$('camCloseBtn').onclick=stopCamera;
   if($('offlineSyncNow'))$('offlineSyncNow').onclick=()=>offlineFlush(true); // ر١٠: مزامنة يدوية
   if(featuresOfflineOn()){ offlineUpdateChip(); offlineRefreshLen(); } // ر١٠: تحديث شريحة الحالة وعدّاد الطابور
+  // إدارة ما نُسي: المدير يضيف عدّادين/موقّعين نُسوا بعد البدء — والجلسة مفتوحة فقط
+  if(can('session.assign') && sessStatusOf(curSess)==='open'){
+    c.insertAdjacentHTML('beforeend','<div class="card"><button class="btn ghost sm" id="lateAmendBtn">⚙ إدارة ما نُسي (عدّادون/موقّعون)</button><div id="lateAmendBox" style="display:none;margin-top:10px"></div></div>');
+    const lb=$('lateAmendBtn'); if(lb)lb.onclick=()=>{ const bx=$('lateAmendBox'); if(bx&&bx.style.display==='none'){ bx.style.display=''; renderLateAmend(); } else if(bx) bx.style.display='none'; };
+  }
   renderCountList();
 }
+/* ===== إدارة ما نُسي: إضافة عدّادين وموقّعين بعد بدء الجرد (للمدير — session.assign) دون مساس بحالة الجلسة ===== */
+function renderLateAmend(){ const bx=$('lateAmendBox'); if(!bx)return;
+  bx.innerHTML='<p class="muted" style="margin-bottom:8px">أضف مَن نُسي عند فتح الجلسة — يسري فورًا على العدّ وكتل تواقيع المحاضر.</p>'+
+    '<div style="font-weight:700;font-size:13px;margin:8px 0 4px">العدّادون المكلَّفون</div><div id="laList"><p class="muted">جارٍ التحميل…</p></div>'+
+    '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">الموقّعون (مسمى وظيفي + اسم)</div><div id="laSigs"></div>'+
+    '<button type="button" class="btn ghost sm" id="laSigAdd" style="margin-top:6px">+ إضافة موقّع</button>'+
+    '<div style="margin-top:10px"><button class="btn" id="laSave">حفظ الإضافات</button></div><div class="status" id="laStatus"></div>';
+  const sigRow=(t,n)=>'<div style="display:flex;gap:8px;margin-bottom:6px"><input class="laT" placeholder="المسمى الوظيفي" value="'+esc(t||'')+'" style="flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input class="laN" placeholder="الاسم" value="'+esc(n||'')+'" style="flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"></div>';
+  const sg=$('laSigs'); sg.innerHTML=((curSess.signatories||[]).map(x=>sigRow(x.title,x.name)).join(''))+sigRow('','');
+  $('laSigAdd').onclick=()=>{ sg.insertAdjacentHTML('beforeend',sigRow('','')); };
+  $('laSave').onclick=doLateAmend;
+  getDocs(collection(db,'users')).then(qs=>{ const us=[]; qs.forEach(d=>us.push(Object.assign({uid:d.id},d.data())));
+    const elig=us.filter(u=>u.active!==false&&userCan(u,'count')); const pre=(curSess.assignedCounters||[]); const el=$('laList'); if(!el)return;
+    el.innerHTML=elig.map(u=>'<label style="display:inline-flex;gap:7px;align-items:center;margin:3px 12px 3px 0"><input type="checkbox" class="lasg" value="'+esc(u.uid)+'" data-name="'+esc(u.name||u.email||u.uid)+'"'+(pre.indexOf(u.uid)>=0?' checked':'')+' style="width:17px;height:17px"> '+esc(u.name||u.email||u.uid)+'</label>').join('')||'<p class="muted">لا عدّادين مؤهّلين — امنح صلاحية العدّ أولًا.</p>';
+  }).catch(e=>{ const el=$('laList'); if(el)el.innerHTML='<p class="status show err">'+errAr(e.code||e.message)+'</p>'; });
+}
+async function doLateAmend(){ if(!can('session.assign'))return;
+  if(sessStatusOf(curSess)!=='open'){ st('laStatus','err','الإضافة متاحة والجلسة مفتوحة فقط.'); return; }
+  const picked=[],names=[]; document.querySelectorAll('.lasg:checked').forEach(ch=>{picked.push(ch.value);names.push(ch.getAttribute('data-name'));});
+  if(sessStarted()&&!picked.length){ st('laStatus','err','أبقِ عدّادًا واحدًا على الأقل بعد بدء الجرد.'); return; }
+  const sigs=[]; const ts=document.querySelectorAll('#laSigs .laT'), ns=document.querySelectorAll('#laSigs .laN');
+  ts.forEach((t,i)=>{ const tv=(t.value||'').trim(), nv=((ns[i]&&ns[i].value)||'').trim(); if(tv||nv)sigs.push({title:tv,name:nv}); });
+  st('laStatus','info','جارٍ الحفظ…',true);
+  try{ await updateDoc(doc(db,'sessions',curSid),{assignedCounters:picked,assignedNames:names,signatories:sigs});
+    curSess.assignedCounters=picked; curSess.assignedNames=names; curSess.signatories=sigs;
+    logActivity('amend','','إدارة ما نُسي — العدّادون: '+(names.join('، ')||'—')+' • الموقّعون: '+(sigs.map(s=>s.title||s.name).join('، ')||'—'),null);
+    st('laStatus','ok','حُفظت الإضافات ✓ — سرت فورًا على العدّ والمحاضر.');
+  }catch(err){ st('laStatus','err','تعذّر: '+errAr(err.code||err.message)); } }
 // ===== طور التجهيز: تكليف العدّادين وبدء الجرد (المرحلة أ‑٣) =====
 function renderSetupShell(c){
   const canAssign=can('session.assign');

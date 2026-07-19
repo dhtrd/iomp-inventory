@@ -153,6 +153,10 @@ service cloud.firestore {
         || ( resource.data.get('started',false)==false && stF()=='open'
              && chk(['assignedCounters','assignedNames','started','startedBy','startedByName','startedAt'])
              && can('session.assign') )
+        // إدارة ما نُسي: إضافة عدّادين/موقّعين بعد البدء — الجلسة مفتوحة، وهذه الحقول الثلاثة حصرًا (لا مساس بالحالة)
+        || ( stF()=='open'
+             && chk(['assignedCounters','assignedNames','signatories'])
+             && can('session.assign') )
         // إغلاق للمراجعة
         || ( stF()=='open' && stT()=='review' && chk(['status','closedBy','closedByName','closedAt']) && can('session.close') )
         // إدارة المراجعة: تمّت / إرجاع للمراجعة / إرجاع للعدّ
