@@ -2553,10 +2553,18 @@ function docSignatories(){
   if(Array.isArray(cfg)&&cfg.length) return cfg.map(x=>({ key:x.key||'', label:x.label||String(x), name:'', optional:!!x.optional }));
   return [{label:'رئيس اللجنة'},{label:'عضو اللجنة'},{label:'عضو اللجنة'}]; } // الافتراض: لجنة ثلاثية (سلوك اليوم)
 // المحطّة ٤ (مُنشئ المستندات الرسمية): قوالب محاضر قابلة للتحرير (عنوان/تمهيد/فقرات مرقّمة) بمتغيّرات نائبة — settings.docTemplates[reasonKey]. قابلة للتوسّع.
-const DOC_VARS=[{k:'{company}',d:'اسم الشركة'},{k:'{document}',d:'اسم المستند'},{k:'{session}',d:'اسم الجلسة'},{k:'{location}',d:'الموقع/المستودع'},{k:'{date}',d:'التاريخ'},{k:'{items}',d:'عدد الأصناف'},{k:'{counted}',d:'المعدود'},{k:'{netVar}',d:'صافي الفروقات'},{k:'{approver}',d:'المعتمِد'}];
+const DOC_VARS=[{k:'{company}',d:'اسم الشركة'},{k:'{document}',d:'اسم المستند'},{k:'{session}',d:'اسم الجلسة'},{k:'{location}',d:'الموقع/المستودع'},{k:'{date}',d:'التاريخ'},{k:'{items}',d:'عدد الأصناف'},{k:'{counted}',d:'المعدود'},{k:'{netVar}',d:'صافي الفروقات'},{k:'{approver}',d:'المعتمِد'},
+  {k:'{committee}',d:'أعضاء لجنة الجرد'},{k:'{newResp}',d:'المسؤول الجديد (إن وجد)'},{k:'{oldResp}',d:'المسؤول السابق (إن وجد)'},{k:'{branchMgr}',d:'مسؤول الفرع (إن سُجّل)'},{k:'{totalCost}',d:'إجمالي التكلفة الدفترية'},{k:'{totalActual}',d:'إجمالي قيمة الفعلي'},{k:'{onHand}',d:'إجمالي الكمية في اليد'}];
 function docVarCtx(reasonKey,rows){ const s2=summarize(rows||[]); const R=PRINT_REASONS[reasonKey]||PRINT_REASONS.detailed;
+  const cp=(repSess&&repSess.custodyPrev)||{}, cn=(repSess&&repSess.custodyNext)||{};
+  const who=x=>x&&x.name?(x.name+(x.title?' — '+x.title:'')):'—';
+  const qty=(rows||[]).reduce((a,r)=>a+(Number(r.counted)||0),0);
   return { '{company}':'شركة الضبيبي التجارية','{document}':R.label,'{session}':(repSess&&repSess.name)||'','{location}':(repSess&&repSess.location)||'—',
-    '{date}':new Date().toLocaleDateString('en-GB'),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':fmt(round2(s2.netVar)),'{approver}':((repSess&&repSess.approvedByName)||'—') }; }
+    '{date}':new Date().toLocaleDateString('en-GB'),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':fmt(round2(s2.netVar)),'{approver}':((repSess&&repSess.approvedByName)||'—'),
+    '{committee}':docSignatories().map(x=>x.label).join('، ')||'—',
+    '{newResp}':who(cn),'{oldResp}':who(cp),
+    '{branchMgr}':((repSess&&repSess.branchManagerName)||'—'),
+    '{totalCost}':fmt(round2(s2.bookVal)),'{totalActual}':fmt(round2(s2.countedVal)),'{onHand}':fmt(round2(qty)) }; }
 function docSubst(text,ctx){ let t=String(text==null?'':text); Object.keys(ctx).forEach(k=>{ t=t.split(k).join(ctx[k]); }); return t; }
 function docTemplate(reasonKey){ return (appSettings().docTemplates||{})[reasonKey]||{}; }
 const APP_VERSION='IOMP 1.1 (م١٤–م٣٠ + إصلاحات التدقيق ١–٥ والكفاءة)'; // إصلاح-٦ (بند ٨): تحديث بطاقة الإصدار

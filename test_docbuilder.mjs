@@ -43,6 +43,18 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   ok('DB3 التمهيد والفقرات مُستبدَلة وظاهرة (قائمة مرقّمة)', html.indexOf('جُرد فرع أ')>=0 && html.indexOf('المعدود: 1')>=0 && html.indexOf('<ol')>=0, 'intro/clauses');
   await page.close(); }
 
+// ===== DB4 — المتغيّرات الجديدة: اللجنة/المسؤولان/الإجماليات تُستبدَل ولا يبقى نائب خام =====
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],
+    config:{settings:{signatories:[{key:'inv_mgr',label:'مدير الجرد'},{key:'gm',label:'المدير العام'}]}},
+    sessions:[{id:'sh',name:'جرد تسليم',status:'approved',location:'فرع أ',itemCount:2,approvedByName:'المالك',
+      custodyPrev:{name:'سالم',title:'أمين سابق'},custodyNext:{name:'ماجد',title:'أمين جديد'},__chunks:EXI,__counts:EXC}]});
+  await page.evaluate(()=>window.__openReport('sh')); await page.waitForTimeout(450);
+  const sub=await page.evaluate(()=>window.__docSubst('لجنة: {committee} | جديد: {newResp} | سابق: {oldResp} | تكلفة: {totalCost} | فعلي: {totalActual} | يد: {onHand} | فرع: {branchMgr}','committee'));
+  ok('DB4 اللجنة من الموقّعين المعتمدين', sub.includes('مدير الجرد، المدير العام'), sub);
+  ok('DB4 المسؤولان الجديد/السابق بالاسم والمسمى', sub.includes('ماجد — أمين جديد')&&sub.includes('سالم — أمين سابق'), sub);
+  ok('DB4 لا نائب خام متبقٍّ + الإجماليات أرقام', !/\{[a-zA-Z]+\}/.test(sub), sub);
+  await page.close(); }
+
 await browser.close();
 let pass=0; for(const r of results){ console.log((r.pass?'✓':'✗')+' '+r.n+(r.d&&!r.pass?('  << '+r.d):'')); if(r.pass)pass++; }
 console.log(`\nRECON ${pass}/${results.length} ${pass===results.length?'passed':'FAILED'}`);
