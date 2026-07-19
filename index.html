@@ -1045,6 +1045,10 @@ function renderNav(){
   nav.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{adminTab=b.getAttribute('data-tab');renderNav();route();});
   const pt=$('pageTitle'); if(pt){ pt.textContent=({home:'لوحة المعلومات',sessions:'جلسات الجرد',warehouses:'المستودعات',users:'المستخدمون',settings:'الأدوار والصلاحيات',admin:'مركز الإدارة',trash:'سلة المهملات',reports:'التقارير',branches:'الفروع',products:'كتالوج المنتجات'})[adminTab]||'نظام الجرد'; }
   const av=$('whoAv'); if(av&&myProfile) av.textContent=String(myProfile.name||myProfile.email||'؟').trim().charAt(0);
+  // الملف الشخصي بنقرة الصورة — لكل مستخدم أيًّا كان دوره (شاشة «حسابي» بلا حارس؛ أزرارها تتدهور بأمان)
+  const wc=document.querySelector('.whochip'); if(wc&&!wc._w){ wc._w=1; wc.style.cursor='pointer'; wc.setAttribute('role','button'); wc.setAttribute('tabindex','0'); wc.setAttribute('aria-label','ملفي الشخصي');
+    const openMe=()=>{ if(myProfile) renderAccount($('appContent')); };
+    wc.onclick=openMe; wc.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openMe(); } }; }
 }
 function navBtn(k,label){ const ic=({home:'i-home',sessions:'i-sessions',warehouses:'i-warehouse',users:'i-users',settings:'i-shield',admin:'i-shield',trash:'i-trash',reports:'i-report',branches:'i-warehouse',products:'i-warehouse'})[k]||'i-sessions';
   return '<button data-tab="'+k+'" class="'+(adminTab===k?'on':'')+'"><svg class="nvic"><use href="#'+ic+'"/></svg><span class="lbl">'+label+'</span></button>'; }
