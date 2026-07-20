@@ -21,6 +21,10 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- ر٣/I-1: XLSX تُحمَّل كسولًا عند أول استيراد/تصدير Excel فقط (توفير ~٢٥٠KB لكل فتح) -->
 <script>try{var _a=JSON.parse(localStorage.getItem('iomp-appearance')||'{}');var _R=document.documentElement;var _m=_a.mode==='auto'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):(_a.mode||'light');_R.setAttribute('data-theme',_m);if(_a.density)_R.setAttribute('data-density',_a.density);}catch(e){}</script>
+<script>/* سهم القوائم الأصيلة يعكس حالة الفتح (بعد الموافقة) — مستمعات معزولة على المستند، صفر مساس بالمنطق */
+document.addEventListener('mousedown',function(e){var s=e.target&&e.target.closest&&e.target.closest('select');if(s)s.classList.add('sel-open');},true);
+['change','blur'].forEach(function(ev){document.addEventListener(ev,function(e){if(e.target&&e.target.tagName==='SELECT')e.target.classList.remove('sel-open');},true);});
+document.addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='SELECT'&&(e.key==='Enter'||e.key==='Escape'))e.target.classList.remove('sel-open');},true);</script>
 <script>/* PWA: تسجيل service worker — على https/http فقط (file:// في حزمة الاختبارات لا يدعمه فيبقى الحارس صامتًا) */
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){ addEventListener('load',function(){ try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){} }); }</script>
 <style>
@@ -158,6 +162,8 @@ td.num,th.num{text-align:center;font-variant-numeric:tabular-nums}
 .st.match{background:rgba(12,163,12,.12);color:var(--success)}
 .st.uncounted{background:rgba(250,178,25,.16);color:#8a5d00}
 .st.nobook{background:var(--hair);color:var(--tsec)}
+.st.extra{background:rgba(201,162,39,.16);color:#8a5d00}
+[data-theme="dark"] .st.extra{background:rgba(201,162,39,.20);color:#E3A94E}
 .dpos{color:var(--success);font-weight:700}.dneg{color:var(--danger);font-weight:700}
 .print-only{display:none}
 #repPrintArea{display:none}
@@ -561,6 +567,33 @@ button[aria-label="إغلاق"]:active,.toast .tx:active{transform:scale(.88)}
 #menuToggle:active{transform:scale(.88)}
 #appView[data-nav="collapsed"] #menuToggle:active,#appView[data-nav="drawer"] #menuToggle:active{transform:rotate(90deg) scale(.88)}
 #menuToggle:hover{border-color:color-mix(in srgb,var(--navy700) 40%,var(--border));color:var(--navy700)}
+/* ═══ مربّعات اختيار بأسلوب HeroUI (طلب العميل — نقل التصميم لا المكتبة): تعبئة تتّسع من المركز،
+   علامة صح تُرسم بتدرّج، ضغطة مرتدة، لون يتبع اللكنة، داكن كامل، واحترام تقليل الحركة (المعالَج عالميًّا) ═══ */
+.rcap,.rtask{transition:border-color .2s linear,transform var(--tr),box-shadow var(--tr)}
+.rcap::before,.rtask::before{content:"";position:absolute;inset:-1.6px;border-radius:inherit;background:var(--navy700);opacity:0;transform:scale(.5);transition:transform .2s linear,opacity .2s linear;z-index:0}
+.rcap:checked,.rtask:checked{background:var(--card);border-color:var(--navy700)}
+.rcap:checked::before,.rtask:checked::before{opacity:1;transform:scale(1)}
+.rcap:checked::after,.rtask:checked::after{z-index:1;opacity:1;transform:rotate(45deg) scale(1);transition:transform .2s ease .06s,opacity .2s ease .06s}
+.rcap::after,.rtask::after{opacity:0;transform:rotate(45deg) scale(.72)}
+.rcap:active,.rtask:active{transform:scale(.9)}
+input[type="checkbox"]:not(.rcap):not(.rtask):active{transform:scale(.9)}
+/* تعميم أسلوب HeroUI على كل مربّع اختيار أصيل في التطبيق (مركز الإدارة، الميزات الاختيارية، تعديل المستخدم،
+   جلسات الجرد، التكليف، إدارة ما نُسي، تفضيلات الإشعارات… حيثما وُجد input[type=checkbox]) */
+input[type="checkbox"]:not(.rcap):not(.rtask){appearance:none;-webkit-appearance:none;position:relative;border:1.6px solid var(--border);border-radius:7px;background:var(--card);cursor:pointer;flex:none;transition:border-color .2s linear,transform var(--tr),box-shadow var(--tr)}
+input[type="checkbox"]:not(.rcap):not(.rtask)::before{content:"";position:absolute;inset:-1.6px;border-radius:inherit;background:var(--navy700);opacity:0;transform:scale(.5);transition:transform .2s linear,opacity .2s linear}
+input[type="checkbox"]:not(.rcap):not(.rtask)::after{content:"";position:absolute;inset-inline-start:5px;top:2px;width:4px;height:9px;border:solid var(--on-accent);border-width:0 2px 2px 0;opacity:0;transform:rotate(45deg) scale(.72);z-index:1;transition:transform .2s ease .06s,opacity .2s ease .06s}
+input[type="checkbox"]:not(.rcap):not(.rtask):checked{border-color:var(--navy700)}
+input[type="checkbox"]:not(.rcap):not(.rtask):checked::before{opacity:1;transform:scale(1)}
+input[type="checkbox"]:not(.rcap):not(.rtask):checked::after{opacity:1;transform:rotate(45deg) scale(1)}
+input[type="checkbox"]:not(.rcap):not(.rtask):hover:not(:disabled){border-color:var(--navy500);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 10%,transparent)}
+input[type="checkbox"]:not(.rcap):not(.rtask):disabled{opacity:.55;cursor:not-allowed}
+@media (max-width:820px),(pointer:coarse){input[type="checkbox"]:not(.rcap):not(.rtask)::after{inset-inline-start:8px;top:4px;width:5px;height:12px}}
+/* ═══ توحيد الانتقاء (بعد الموافقة): مؤشّر المحدَّد في القوائم البحثية + سهم أصيل يعكس حالة الفتح ═══ */
+.selx-opt{position:relative}
+.selx-opt.sel{padding-inline-end:30px}
+.selx-opt.sel::after{content:"";position:absolute;inset-inline-end:11px;top:50%;width:5px;height:10px;border:solid var(--navy700);border-width:0 2.2px 2.2px 0;transform:translateY(-62%) rotate(45deg)}
+select.sel-open,.field select.sel-open,.rtools select.sel-open,.utoolbar select.sel-open{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23697386' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 15l6-6 6 6'/></svg>");border-color:var(--navy700)}
+[data-theme="dark"] select.sel-open,[data-theme="dark"] .field select.sel-open,[data-theme="dark"] .rtools select.sel-open,[data-theme="dark"] .utoolbar select.sel-open{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23838BA3' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 15l6-6 6 6'/></svg>")}
 /* م٤: إيقاع الحقول — طبقتان مقصودتان: نماذج 12px / أشرطة مدمجة 9px */
 .utoolbar .usearch{padding:9px 12px}
 #cfOverlay .cfinput,#ppOverlay .cfinput{padding:12px 13px}
@@ -790,7 +823,7 @@ const firebaseConfig = {
 };
 const OWNER_EMAIL = "a2@dhtrd.com";
 const ROLES = ["مدير", "مدير مخزون", "عدّاد", "مطّلع"];
-const STLABEL = {deficit:"عجز",surplus:"زيادة",match:"مطابق",uncounted:"غير معدود",nobook:"بلا رصيد دفتري"};
+const STLABEL = {deficit:"عجز",surplus:"زيادة",match:"مطابق",uncounted:"غير معدود",nobook:"بلا رصيد دفتري",extra:"زيادة خارج الدفتر"};
 // ===== الصلاحيات — لوحة الأذونات (المرحلة أ‑٢) =====
 const CAPS = [
   {key:'count',           label:'العدّ والجرد',           hint:'إضافة/حذف/تصفير كميات الأصناف'},
@@ -3282,7 +3315,7 @@ function computeVariance(items,counts){
     else { diff=0; hasDiff=false; }
     let status;
     if(!isCounted) status='uncounted';
-    else if(book==null) status='nobook';
+    else if(book==null) status=(it.manual?'extra':'nobook'); // اليدوي المعدود = زيادة خارج الدفتر
     else if(Math.abs(diff)<1e-9) status='match';
     else status=diff>0?'surplus':'deficit';
     const varValue=(cost!=null&&hasDiff)?diff*cost:null;
@@ -3295,11 +3328,11 @@ function computeVariance(items,counts){
 }
 // ملخصات إجمالية (صافي الفروقات محسوب على المعدود فقط؛ غير المعدود يُفصح عنه منفصلاً).
 function summarize(rows){
-  const s={total:rows.length,counted:0,uncounted:0,match:0,surplus:0,deficit:0,nobook:0,
+  const s={total:rows.length,counted:0,uncounted:0,match:0,surplus:0,deficit:0,nobook:0,extra:0,
     withCost:0,bookVal:0,countedVal:0,netVar:0,surplusVal:0,deficitVal:0,uncountedBookVal:0};
   rows.forEach(r=>{
     if(r.isCounted)s.counted++; else s.uncounted++;
-    if(r.status==='match')s.match++; else if(r.status==='surplus')s.surplus++; else if(r.status==='deficit')s.deficit++; else if(r.status==='nobook')s.nobook++;
+    if(r.status==='match')s.match++; else if(r.status==='surplus')s.surplus++; else if(r.status==='deficit')s.deficit++; else if(r.status==='nobook')s.nobook++; else if(r.status==='extra')s.extra++;
     if(r.cost!=null)s.withCost++;
     if(r.bookValue!=null)s.bookVal+=r.bookValue;
     if(r.countedValue!=null)s.countedVal+=r.countedValue;
@@ -3343,7 +3376,10 @@ async function openVarianceReport(sid,backTo){
     if(!canViewSession(repSess)){ c.innerHTML='<div class="card"><p class="status show err">هذه الجلسة خارج نطاق اطّلاعك — لا يمكنك عرض تقريرها.</p></div>'; return; }
     const snap=await getDocs(collection(db,'sessions',sid,'snapshot'));
     const chunks=[]; snap.forEach(d=>chunks.push(d)); chunks.sort((a,b)=>a.id<b.id?-1:1);
-    let items=[]; chunks.forEach(d=>{items=items.concat(d.data().items||[]);}); repItems=items; repCounts={};
+    let items=[]; chunks.forEach(d=>{items=items.concat(d.data().items||[]);});
+    // الأصناف المضافة يدويًّا تدخل التقرير كـ«زيادة خارج الدفتر» (طلب العميل) — قراءة واحدة، لا مساس بمسار العدّ
+    try{ const exq=await getDocs(collection(db,'sessions',sid,'extraItems')); exq.forEach(d=>{ const x=d.data(); if(x&&x.code!=null) items.push(Object.assign({},x,{manual:true})); }); }catch(e){}
+    repItems=items; repCounts={};
     renderReportShell();
     repUnsub=onSnapshot(collection(db,'sessions',sid,'counts'),(qs)=>{repCounts={};qs.forEach(d=>{const x=d.data();if(x&&x.code!=null)repCounts[String(x.code)]=x;});recomputeReport();},(err)=>{if($('repNote'))$('repNote').innerHTML='<span class="status show err">تعذّر تحميل العدّات: '+errAr(err.code)+'</span>';});
   }catch(err){c.innerHTML='<div class="card"><p class="status show err">تعذّر تحميل التقرير: '+errAr(err.code||err.message)+'</p></div>';}
@@ -3359,7 +3395,7 @@ function renderReportShell(){
       '<div class="rtools">'+
         '<input id="repSearch" placeholder="بحث بالكود أو الاسم…">'+
         '<select id="repCat"><option value="">كل الفئات</option>'+cats.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('')+'</select>'+
-        '<select id="repStatus"><option value="all">كل الحالات</option><option value="counted">المعدود فقط</option><option value="var">الفروقات فقط (عجز/زيادة)</option><option value="deficit">عجز</option><option value="surplus">زيادة</option><option value="match">مطابق</option><option value="uncounted">غير معدود</option></select>'+
+        '<select id="repStatus"><option value="all">كل الحالات</option><option value="counted">المعدود فقط</option><option value="var">الفروقات فقط (عجز/زيادة)</option><option value="deficit">عجز</option><option value="surplus">زيادة</option><option value="extra">زيادة خارج الدفتر (يدوي)</option><option value="match">مطابق</option><option value="uncounted">غير معدود</option></select>'+
         '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tsec);white-space:nowrap"><input type="checkbox" id="repWho" style="width:16px;height:16px"> إظهار «من أضاف»</label>'+
       '</div>'+
       '<div class="rtable-wrap"><div id="repTable"><p class="muted" style="padding:12px">جارٍ الحساب…</p></div></div>'+
@@ -3389,6 +3425,7 @@ function renderReportSummary(){
     ftile('مطابق',fmt(s.match),s.match?'pos':'','match')+
     ftile('عجز',fmt(s.deficit),s.deficit?'neg':'','deficit')+
     ftile('زيادة',fmt(s.surplus),'','surplus')+
+    ftile('خارج الدفتر',fmt(s.extra),'','extra')+
     vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
     vtile('إجمالي القيمة الفعلية',money(s.countedVal))+
     tile('صافي قيمة الفروقات',money(s.netVar),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):'');
@@ -3426,7 +3463,7 @@ function renderReportRows(){
   const body=shown.map(r=>{
     const diffCell=r.hasDiff?colored(r.diff,fmt(r.diff)):'—';
     const varCell=r.varValue!=null?colored(r.varValue,fmt(round2(r.varValue))):'—';
-    const whoCell=showWho?'<td class="muted" style="font-size:12px">'+(r.who.length?r.who.map(w=>esc(w.name)+': '+fmt(w.q)).join('<br>'):'—')+'</td>':'';
+    const whoCell=showWho?'<td class="muted" style="font-size:12px">'+(r.who.length?r.who.map(w=>esc(w.name)+': '+fmt(w.q)).join('<br>'):'—')+(r.manual?' <span class="tag" style="font-size:10px">يدوي</span>':'')+'</td>':'';
     return '<tr><td class="num" style="direction:ltr;text-align:right"><span class="tag">'+esc(r.code)+'</span></td>'+
       '<td>'+esc(r.name)+(r.manual?' <span class="tag" style="background:#FEF3C7;color:#92400E">يدوي</span>':'')+'</td><td class="muted">'+esc(r.category||'—')+'</td>'+
       '<td class="num">'+(r.book!=null?fmt(r.book):'—')+'</td>'+
@@ -3529,7 +3566,7 @@ function buildPrintReport(reasonKey){
   if(R.summary){ const s2=summarize(rows); const hasCost=s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—';
     const chip=(k,v)=>'<span style="border:1px solid #ccc;border-radius:6px;padding:4px 10px">'+k+': <b>'+v+'</b></span>';
     html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px">'+
-      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.deficit))+chip('زيادة',fmt(s2.surplus))+
+      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.deficit))+chip('زيادة',fmt(s2.surplus))+chip('خارج الدفتر',fmt(s2.extra))+
       chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar))+'</div>';
   }
   const th=cols.map(c=>'<th style="border:1px solid #999;padding:5px 7px;background:#E8EEF9;color:#142440;'+(PRINT_COLDEF[c].num?'text-align:center':'text-align:right')+'">'+esc(PRINT_COLDEF[c].th)+'</th>').join('');

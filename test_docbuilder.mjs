@@ -79,6 +79,20 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   ok('DB6 {branchMgr} يطبع مسؤول الفرع/المستودع المسجَّل بالجلسة', sub.includes('ماجد الدوسري'), sub);
   await page.close(); }
 
+// ===== DB7 — الأصناف اليدوية تدخل التقرير: بلاطة «خارج الدفتر»، حالة، محضر (طلب العميل) =====
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],
+    sessions:[{id:'sx7',name:'جرد بيدوي',status:'approved',location:'فرع أ',itemCount:1,approvedByName:'المالك',
+      __chunks:[[{code:'A1',name:'صنف دفتري',category:'ك',book:5,cost:2}]],
+      __counts:[{code:'A1',qty:5},{code:'MX1',qty:2,entries:[{by:'مجاهد',qty:2}]}],
+      __extras:[{code:'MX1',name:'رف يدوي',category:'ك',cost:5}]}]});
+  await page.evaluate(()=>window.__openReport('sx7')); await page.waitForTimeout(500);
+  const html=await page.evaluate(()=>window.__contentHtml());
+  ok('DB7 الصنف اليدوي ظاهر في صفوف التقرير', html.includes('رف يدوي')&&html.includes('زيادة خارج الدفتر'), '');
+  ok('DB7 بلاطة «خارج الدفتر» تعدّ اليدوي', /خارج الدفتر/.test(html), '');
+  const pr=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('committee'); }catch(e){ return 'ERR:'+e.message; } });
+  ok('DB7 المحضر المطبوع يتضمن اليدوي وشريحة خارج الدفتر', pr.includes('رف يدوي')&&pr.includes('خارج الدفتر'), pr.slice(0,80));
+  await page.close(); }
+
 await browser.close();
 let pass=0; for(const r of results){ console.log((r.pass?'✓':'✗')+' '+r.n+(r.d&&!r.pass?('  << '+r.d):'')); if(r.pass)pass++; }
 console.log(`\nRECON ${pass}/${results.length} ${pass===results.length?'passed':'FAILED'}`);
