@@ -111,6 +111,11 @@ service cloud.firestore {
       allow write: if can('perms.manage');
     }
 
+    // الوصلة المركزية لـDropbox (رمز التجديد) — سرّية: قراءةً وكتابةً لحاملي «إدارة الصلاحيات» حصرًا
+    match /config/dropbox {
+      allow read, write: if can('perms.manage');
+    }
+
     // ---------- المستخدمون ----------
     match /users/{userId} {
       allow read: if authed();
