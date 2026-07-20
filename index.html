@@ -2751,7 +2751,16 @@ function dbxSettings(){ return (appSettings().dropbox)||{}; }
 // البوابة الوحيدة لكل HTTP نحو Dropbox — الاختبارات تستبدلها بموك window.__dbxMock (المنطق الحقيقي واحد في الحالتين)
 async function dbxFetch(url,opts){ if(window.__dbxMock) return await window.__dbxMock(url,opts); return await fetch(url,opts); }
 function dbxStored(){ try{ return JSON.parse(localStorage.getItem(DBX_LS_KEY)||'null'); }catch(e){ return null; } }
-function dbxStore(o){ try{ if(o)localStorage.setItem(DBX_LS_KEY,JSON.stringify(o)); else localStorage.removeItem(DBX_LS_KEY); }catch(e){} }
+function dbxStore(o){ try{ if(o)localStorage.setItem(DBX_LS_KEY,JSON.stringify(o)); else localStorage.removeItem(DBX_LS_KEY); }catch(e){}
+  // مزامنة مركزية: وصلة Dropbox واحدة لكل الأجهزة الإدارية تصبّ في المجلد نفسه — تُرآى في config/dropbox (المحمي لحاملي إدارة الصلاحيات حصرًا)
+  try{ if(myProfile&&can('perms.manage')&&db){ setDoc(doc(db,'config','dropbox'),{link:(o||null),updatedBy:(auth&&auth.currentUser&&auth.currentUser.uid)||'',updatedAt:serverTimestamp()},{merge:true}); } }catch(e){} }
+// ترطيب مركزي: جهاز إداري بلا وصلة محلية يلتقط الوصلة المركزية تلقائيًّا — «اربط مرة، يعمل من أي جهاز»
+async function dbxHydrateCentral(){ try{ if(!myProfile||!can('perms.manage'))return false;
+  const loc=dbxStored();
+  const d=await getDoc(doc(db,'config','dropbox')); const l=d.exists()&&d.data()&&d.data().link;
+  if(!loc&&l){ localStorage.setItem(DBX_LS_KEY,JSON.stringify(l)); return true; } // جهاز بلا وصلة يلتقط المركزية
+  if(loc&&!l){ setDoc(doc(db,'config','dropbox'),{link:loc,updatedBy:(auth&&auth.currentUser&&auth.currentUser.uid)||'',updatedAt:serverTimestamp()},{merge:true}); } // مزامنة عكسية: الربط جرى قبل المصادقة فترفع الوصلة المحلية القائمة مركزيًّا
+  }catch(e){} return false; }
 function dbxConnected(){ const s=dbxStored(); return !!(s&&s.refresh_token); }
 function dbxLocalRec(){ try{ return JSON.parse(localStorage.getItem(DBX_REC_KEY)||'{}')||{}; }catch(e){ return {}; } }
 function dbxSetLocalRec(r){ try{ localStorage.setItem(DBX_REC_KEY,JSON.stringify(r||{})); }catch(e){} }
@@ -2935,6 +2944,7 @@ async function dbxAutoTick(force){
   }catch(e){ return {err:String((e&&e.message)||e)}; }
 }
 function dbxAutoInit(){ if(window.__dbxTimersOn) return; window.__dbxTimersOn=1;
+  dbxHydrateCentral().then(g=>{ if(g&&typeof syncStripRefresh==='function'){ try{ syncStripRefresh(); }catch(e){} } }); // التقاط الوصلة المركزية أول دخول أي جهاز إداري
   try{ setTimeout(()=>{ dbxAutoTick(false); },10000); setInterval(()=>{ dbxAutoTick(false); },30*60*1000); }catch(e){} }
 // استعادة الإعدادات والصلاحيات فقط من نسخة على Dropbox — تحقّق المجموع ثم تمرير جزء الإعدادات لمسار الاستعادة القائم (لا كتابة لبيانات الجلسات)
 async function dbxRestoreConfig(path){
