@@ -2410,6 +2410,9 @@ function renderCountingShell(){
 function renderLateAmend(){ const bx=$('lateAmendBox'); if(!bx)return;
   bx.innerHTML='<p class="muted" style="margin-bottom:8px">أضف مَن نُسي عند فتح الجلسة — يسري فورًا على العدّ وكتل تواقيع المحاضر.</p>'+
     '<div style="font-weight:700;font-size:13px;margin:8px 0 4px">العدّادون المكلَّفون</div><div id="laList"><p class="muted">جارٍ التحميل…</p></div>'+
+    '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">المسؤولان — للاستلام (اختياري)</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="laCustPrev" placeholder="المسؤول السابق — المُسلِّم" value="'+esc((curSess.custodyPrev&&curSess.custodyPrev.name)||'')+'" style="flex:1;min-width:170px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input id="laCustNext" placeholder="المسؤول الجديد — المُستلِم" value="'+esc((curSess.custodyNext&&curSess.custodyNext.name)||'')+'" style="flex:1;min-width:170px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"></div>'+
+    '<div class="muted" style="font-size:12px;margin-top:4px">عند تحديدهما معًا يُتاح «محضر استلام مخزون» بعد الجرد.</div>'+
     '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">الموقّعون (مسمى وظيفي + اسم)</div><div id="laSigs"></div>'+
     '<button type="button" class="btn ghost sm" id="laSigAdd" style="margin-top:6px">+ إضافة موقّع</button>'+
     '<div style="margin-top:10px"><button class="btn" id="laSave">حفظ الإضافات</button></div><div class="status" id="laStatus"></div>';
@@ -2429,8 +2432,10 @@ async function doLateAmend(){ if(!can('session.assign'))return;
   const sigs=[]; const ts=document.querySelectorAll('#laSigs .laT'), ns=document.querySelectorAll('#laSigs .laN');
   ts.forEach((t,i)=>{ const tv=(t.value||'').trim(), nv=((ns[i]&&ns[i].value)||'').trim(); if(tv||nv)sigs.push({title:tv,name:nv}); });
   st('laStatus','info','جارٍ الحفظ…',true);
-  try{ await updateDoc(doc(db,'sessions',curSid),{assignedCounters:picked,assignedNames:names,signatories:sigs});
-    curSess.assignedCounters=picked; curSess.assignedNames=names; curSess.signatories=sigs;
+  const cpv=($('laCustPrev')?$('laCustPrev').value.trim():''), cnv=($('laCustNext')?$('laCustNext').value.trim():'');
+  const custodyPrev=cpv?Object.assign({},curSess.custodyPrev||{},{name:cpv}):null, custodyNext=cnv?Object.assign({},curSess.custodyNext||{},{name:cnv}):null;
+  try{ await updateDoc(doc(db,'sessions',curSid),{assignedCounters:picked,assignedNames:names,signatories:sigs,custodyPrev:custodyPrev,custodyNext:custodyNext});
+    curSess.assignedCounters=picked; curSess.assignedNames=names; curSess.signatories=sigs; curSess.custodyPrev=custodyPrev; curSess.custodyNext=custodyNext;
     logActivity('amend','','إدارة ما نُسي — العدّادون: '+(names.join('، ')||'—')+' • الموقّعون: '+(sigs.map(s=>s.title||s.name).join('، ')||'—'),null);
     st('laStatus','ok','حُفظت الإضافات ✓ — سرت فورًا على العدّ والمحاضر.');
   }catch(err){ st('laStatus','err','تعذّر: '+errAr(err.code||err.message)); } }

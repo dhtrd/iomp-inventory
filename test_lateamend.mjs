@@ -25,11 +25,13 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   ok('L1 زر «إدارة ما نُسي» ظاهر والصندوق يُبنى (المؤهّلون + صف موقّع)', btn&&box.cbs>=2&&box.sigT>=1&&box.save, JSON.stringify(box));
   // L2 — إضافة عدّاد ثانٍ وموقّع ثم الحفظ
   await page.evaluate(()=>{ document.querySelectorAll('.lasg').forEach(c=>{ if(c.value==='u_ct2')c.checked=true; });
-    document.querySelector('#laSigs .laT').value='رئيس اللجنة'; document.querySelector('#laSigs .laN').value='خالد العتيبي'; });
+    document.querySelector('#laSigs .laT').value='رئيس اللجنة'; document.querySelector('#laSigs .laN').value='خالد العتيبي';
+    document.getElementById('laCustPrev').value='سالم القحطاني'; document.getElementById('laCustNext').value='ماجد الدوسري'; });
   await page.evaluate(()=>document.getElementById('laSave').click()); await page.waitForTimeout(300);
   const s=await page.evaluate(()=>window.__store['sessions/s1']);
   ok('L2 الحفظ يضيف العدّاد الثاني ويبقي الأول', s.assignedCounters.includes('u_ct')&&s.assignedCounters.includes('u_ct2'), JSON.stringify(s.assignedCounters));
   ok('L2 الموقّع المنسي أُضيف (مسمى+اسم) وبقيت الحالة كما هي', s.signatories&&s.signatories[0].name==='خالد العتيبي'&&s.started===true&&s.status==='open', JSON.stringify(s.signatories));
+  ok('L2 مسؤولا الاستلام المنسيّان أُضيفا (يفعّلان محضر الاستلام)', s.custodyPrev&&s.custodyPrev.name==='سالم القحطاني'&&s.custodyNext&&s.custodyNext.name==='ماجد الدوسري', JSON.stringify({p:s.custodyPrev,n:s.custodyNext}));
   await page.close(); }
 
 // L3 — العدّاد لا يرى الزر
