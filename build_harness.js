@@ -188,6 +188,8 @@ window.__sysDefaults = ()=>sysDefaults(); // المحطّة ٦
 window.__acSavePersonalize = ()=>acSavePersonalize();
 // مهلة السكون: خطاطيف الاختبار — إظهار التنبيه فورًا دون انتظار المهلة
 window.__idleCfg = ()=>idleCfg();
+window.__idleLastSet = (ms)=>{ _idleLast=Number(ms)||Date.now(); try{ localStorage.setItem(idleKey(),String(_idleLast)); }catch(e){} };
+window.__idleCheck = ()=>idleElapsedCheck();
 window.__curNotes = ()=>curNotes; // ملاحظات العدّ الحيّة
 window.__countsMap = ()=>curCounts; // الخريطة الكاملة (لا تلمس __curCounts القديم — يعيد المفاتيح فقط)
 window.__addEntry = (c,v)=>addEntry(c,v);

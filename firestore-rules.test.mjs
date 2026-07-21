@@ -206,6 +206,21 @@ await T('إصلاح-١/١٦: حساب معطّل يُمنع من قراءة عد
 await T('إصلاح-١/١٧: العدّاد يُمنع من قراءة بطاقة المنتج (فيها التكلفة)', assertFails(getDoc(doc(db('u_ct'), 'products/PRD-1'))));
 await T('إصلاح-١/١٧: مدير المخزون يقرأ بطاقة المنتج', assertSucceeds(getDoc(doc(db('u_wh'), 'products/PRD-1'))));
 
+// ---- إعداد «الاطلاع بعد الإغلاق فقط» (viewersAfterClose) — يُفعَّل هنا ثم تُفحص بواباته ----
+await testEnv.withSecurityRulesDisabled(async (ctx) => {
+  const d = ctx.firestore();
+  await setDoc(doc(d, 'config/permissions'), { viewersAfterClose: true }, { merge: true });
+});
+await T('بعد الإغلاق فقط: المطّلع يُمنع من عدّات جلسة مفتوحة', assertFails(getDocs(collection(db('u_vw'), 'sessions/s_open/counts'))));
+await T('بعد الإغلاق فقط: المطّلع يقرأ عدّات جلسة قيد المراجعة', assertSucceeds(getDocs(collection(db('u_vw'), 'sessions/s_rev/counts'))));
+await T('بعد الإغلاق فقط: العدّاد المكلَّف يظل يقرأ جلسته المفتوحة', assertSucceeds(getDocs(collection(db('u_ct'), 'sessions/s_open/counts'))));
+await T('بعد الإغلاق فقط: المالك (حوكمة) يظل يقرأ المفتوحة', assertSucceeds(getDocs(collection(db('u_owner'), 'sessions/s_open/counts'))));
+await testEnv.withSecurityRulesDisabled(async (ctx) => {
+  const d = ctx.firestore();
+  await setDoc(doc(d, 'config/permissions'), { viewersAfterClose: false }, { merge: true });
+});
+await T('إطفاء الإعداد يعيد السلوك: المطّلع يقرأ المفتوحة', assertSucceeds(getDocs(collection(db('u_vw'), 'sessions/s_open/counts'))));
+
 await testEnv.cleanup();
 console.log(`\nRECON ${pass}/${pass + fail} passed`);
 process.exit(fail ? 1 : 0);

@@ -45,6 +45,28 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   ok('I3 حقلا السكون في «تخصيص النظام» والحفظ يثبّت ٤٥/١٥', has&&saved&&saved.minutes===45&&saved.warnSeconds===15, JSON.stringify(saved));
   await page.close(); }
 
+// I4 — الإنفاذ بالوقت الحقيقي: انقضى الوقت كاملًا (نوم/خلفية) ⇒ خروج فوري بلا تنبيه
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER]});
+  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-31*60000); window.__idleCheck(); }); await page.waitForTimeout(200);
+  const r=await page.evaluate(()=>({ out:!!window.__idleOut, warn:!!document.getElementById('idleWarn') }));
+  ok('I4 غياب تجاوز المهلة ⇒ خروج مباشر دون تنبيه', r.out===true&&!r.warn, JSON.stringify(r));
+  await page.close(); }
+
+// I5 — داخل نافذة التنبيه: يظهر التنبيه بالباقي الحقيقي (لا عدّاد مؤقّتات مؤجَّل)
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER]});
+  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-(30*60000-5000)); window.__idleCheck(); }); await page.waitForTimeout(250);
+  const r=await page.evaluate(()=>({ out:!!window.__idleOut, warn:!!document.getElementById('idleWarn'), n:Number((document.getElementById('idleCount')||{}).textContent||0) }));
+  ok('I5 داخل نافذة التنبيه ⇒ تنبيه بباقٍ حقيقي (٠<ن≤١٠)', !r.out&&r.warn&&r.n>0&&r.n<=10, JSON.stringify(r));
+  await page.close(); }
+
+// I6 — إنفاذ عند الإقلاع: جلسة محفوظة وغياب طويل ⇒ خروج فور الفتح (حتى بعد إغلاق التطبيق كليًّا)
+{ const page=await ctx.newPage();
+  await page.addInitScript(()=>{ try{ localStorage.setItem('iomp-idle-last-u_owner', String(Date.now()-40*60000)); }catch(e){} });
+  await load(page,{profile:OWNER,users:[OWNER]}); await page.waitForTimeout(300);
+  const r=await page.evaluate(()=>({ out:!!window.__idleOut }));
+  ok('I6 إعادة فتح التطبيق بعد غياب يتجاوز المهلة ⇒ خروج فوري', r.out===true, JSON.stringify(r));
+  await page.close(); }
+
 await browser.close();
 let pass=0; for(const r of results){ console.log((r.pass?'✓':'✗')+' '+r.n+(r.d&&!r.pass?('  << '+r.d):'')); if(r.pass)pass++; }
 console.log(`\nRECON ${pass}/${results.length} ${pass===results.length?'passed':'FAILED'}`);

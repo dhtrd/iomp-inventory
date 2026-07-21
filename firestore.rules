@@ -78,10 +78,14 @@ service cloud.firestore {
     }
     // من يقرأ البيانات الحسّاسة للجلسة: عدّاد مكلَّف، أو منشئها، أو ضمن نطاق التقارير، أو فريق المراجعة/الإغلاق/الاعتماد، أو للحذف النهائي.
     // «تكليف العدّادين» و«إنشاء الجلسة» وحدهما لا يمنحان قراءة العدّات/اللقطة (المنشئ يُغطّى بـ createdBy).
+    // إعداد «الاطلاع بعد الإغلاق فقط»: يحجب بيانات الجلسة المفتوحة عمّن نطاقه تقارير فقط (المكلَّف/المنشئ/الحوكمة لا يتأثرون)
+    function vGate(s) {
+      return s.get('status','open') == 'open' && pExists() && pData().get('viewersAfterClose', false) == true;
+    }
     function canReadSession(s) {
       return authed() && isActive() && (
         s.get('assignedCounters', []).hasAny([uid()]) || s.get('createdBy','') == uid()   // المسار الرخيص أولاً
-        || canViewSession(s)
+        || ( !vGate(s) && canViewSession(s) )
         || can('session.review') || can('session.close') || can('session.approve')
         || can('session.approve.finance') || can('session.approve.gm')   // موقّعا السلسلة يطّلعان على البيانات قبل التوقيع
         || can('session.reopen')

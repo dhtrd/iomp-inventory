@@ -1030,7 +1030,18 @@ function canManageSessions(){ return can('session.create')||can('session.assign'
 function userLocationsOf(uid){ const ul=permConfig&&permConfig.userLocations&&permConfig.userLocations[uid]; return Array.isArray(ul)?ul:[]; }
 function myLocations(){ return myProfile?userLocationsOf(myProfile.uid):[]; }
 function canViewAnyReports(){ return can('report.view')||can('report.view.own')||can('report.view.location'); }
+// إعداد «الاطلاع بعد الإغلاق فقط» (طلب العميل): حين يُفعَّل، «المطّلع فقط» لا يرى الجلسة وهي مفتوحة (أثناء العد)،
+// وتظهر له فور الإغلاق للمراجعة وتبقى ظاهرة بعد الاعتماد. المكلَّفون والمنشئ وفريق الحوكمة لا يتأثرون.
+// وإن أُرجعت للعدّ اختفت عنه فورًا، وإذا أُغلقت ثانيةً ظهرت له بآخر التعديلات (التقرير يقرأ الحالة الحيّة دومًا).
+function viewersAfterCloseOn(){ return !!(permConfig && permConfig.viewersAfterClose); }
+function viewerGateHides(s){ if(!viewersAfterCloseOn())return false;
+  if(sessStatusOf(s)!=='open')return false; // بعد الإغلاق للمراجعة وما بعده (حتى المعتمدة): ظاهرة دومًا
+  if(Array.isArray(s.assignedCounters)&&myProfile&&s.assignedCounters.indexOf(myProfile.uid)>=0)return false;
+  if(myProfile&&s.createdBy===myProfile.uid)return false;
+  if(can('session.assign')||can('session.close')||can('session.review')||can('session.approve')||can('session.approve.finance')||can('session.approve.gm')||can('session.reopen'))return false;
+  return true; }
 function canViewSession(s){ if(!s||!myProfile)return false;
+  if(viewerGateHides(s))return false;
   if(can('report.view'))return true;
   if(can('report.view.own')&&((Array.isArray(s.assignedCounters)&&s.assignedCounters.indexOf(myProfile.uid)>=0)||s.createdBy===myProfile.uid))return true;
   if(can('report.view.location')&&myLocations().indexOf(s.location||'')>=0)return true;
@@ -1159,7 +1170,7 @@ function errAr(code){const m={'auth/invalid-email':'البريد غير صحيح
 
 // ===== LOGIN =====
 $('loginForm').onsubmit=async(e)=>{e.preventDefault();if(!auth)return;$('loginBtn').disabled=true;st('loginStatus','info','جارٍ تسجيل الدخول…',true);
-  try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}
+  try{const cr=await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value); try{ localStorage.setItem('iomp-idle-last-'+cr.user.uid,String(Date.now())); }catch(e2){} } // ختم دخول جديد ⇒ لا يُحتسب غياب ما قبل الدخول
   catch(err){st('loginStatus','err',errAr(err.code||err.message));$('loginBtn').disabled=false;}};
 $('forgotBtn').onclick=()=>{ st('loginStatus','info','إعادة تعيين كلمة المرور يتولّاها مدير النظام. تواصل معه ليُرسل إليك رابط التعيين.'); };
 
@@ -1534,6 +1545,7 @@ function renderUsers(c){
     '<div class="field"><label>البريد الإلكتروني</label><input type="email" id="nu_email" placeholder="user@dhtrd.com"></div>'+
     '<div class="field"><label>الاسم</label><input type="text" id="nu_name" placeholder="اسم المستخدم"></div>'+
     '<div class="field"><label>كلمة المرور المؤقتة</label><input type="text" id="nu_pw" placeholder="٦ أحرف على الأقل"></div>'+
+    '<label style="display:flex;gap:9px;align-items:center;padding:2px 2px 8px;font-size:13px;color:var(--tsec)"><input type="checkbox" id="nu_fixedpw"> كلمة مرور ثابتة أوزّعها بنفسي — <b>لا</b> يُطلب منه تغييرها عند أول دخول (مناسب للمطّلعين والفروع)</label>'+
     '<div class="field"><label>الدور</label><select id="nu_role">'+allRoles().map(r=>'<option value="'+esc(r)+'">'+esc(roleLabel(r))+'</option>').join('')+'</select></div>'+
     '<div class="field"><label>المسمى الوظيفي (اختياري)</label><input type="text" id="nu_title" placeholder="مثال: مدير فرع الرياض"></div>'+
     '</div><button class="btn" id="addUserBtn">إضافة المستخدم</button><div class="status" id="adminStatus"></div>'+
@@ -1586,7 +1598,9 @@ async function renderUserEdit(uid){
     '<div class="uesec"><h4>الدور والحالة</h4>'+
     '<div class="field"><label>الدور</label><select id="ue_role">'+allRoles().map(r=>'<option value="'+esc(r)+'"'+(r===u.role?' selected':'')+'>'+esc(roleLabel(r))+'</option>').join('')+'</select></div>'+
     '<div class="field"><label>الحالة</label><select id="ue_active"><option value="1"'+(u.active!==false?' selected':'')+'>نشط</option><option value="0"'+(u.active===false?' selected':'')+'>معطّل</option></select></div></div>'+
-    '<div class="uesec"><h4>كلمة المرور</h4><p class="muted" style="font-size:12px">إعادة التعيين بمبادرة المدير — يُرسَل رابطٌ إلى بريد المستخدم.</p>'+
+    '<div class="uesec"><h4>كلمة المرور</h4>'+
+    '<label style="display:flex;gap:9px;align-items:center;padding:2px 0 8px;font-size:13px"><input type="checkbox" id="ue_forcepw"'+(u.mustChangePassword===true?' checked':'')+'> طلب تغيير كلمة المرور عند الدخول القادم <span class="muted" style="font-size:11.5px">(اتركه فارغًا = كلمة مرور ثابتة يوزّعها المدير)</span></label>'+
+    '<p class="muted" style="font-size:12px">إعادة التعيين بمبادرة المدير — يُرسَل رابطٌ إلى بريد المستخدم.</p>'+
     '<button class="btn ghost" id="ueReset">إرسال رابط تعيين كلمة المرور</button></div>'+
     (canPerms?'<div class="uesec"><h4>صلاحيات هذا المستخدم الفردية</h4><div id="permUserBox"></div></div>':'<div class="uesec"><p class="muted">لتعديل الصلاحيات الفردية تلزم صلاحية «إدارة الصلاحيات».</p></div>')+
     '<div class="status" id="ueStatus"></div>'+
@@ -1653,10 +1667,11 @@ function ckSyncChips(){ document.querySelectorAll('#ckFilters [data-ckf]').forEa
 async function saveUserProfile(uid){
   if(!can('users.manage')){st('ueStatus','err',noPerm('users.manage'));return;}
   const name=$('ue_name').value.trim(), title=$('ue_title').value.trim(), role=$('ue_role').value, active=$('ue_active').value==='1';
+  const forcePw=!!($('ue_forcepw')&&$('ue_forcepw').checked); // مُعلَّم = يُطلب التغيير عند الدخول القادم؛ فارغ = كلمة مرور ثابتة يوزّعها المدير
   if(!name){ st('ueStatus','err','الاسم مطلوب.'); return; }
   if(uid===myProfile.uid && !active){ st('ueStatus','err','لا يمكنك تعطيل حسابك.'); return; }
   st('ueStatus','info','جارٍ الحفظ…',true);
-  try{ await updateDoc(doc(db,'users',uid),{name,title,role,active});
+  try{ await updateDoc(doc(db,'users',uid),{name,title,role,active,mustChangePassword:forcePw});
     const cu=permUsersCache.find(x=>x.uid===uid); if(cu){cu.name=name;cu.title=title;cu.role=role;cu.active=active;}
     st('ueStatus','ok','حُفظت بيانات المستخدم ✓');
   }catch(err){ st('ueStatus','err','تعذّر: '+errAr(err.code||err.message)); }
@@ -1680,7 +1695,8 @@ async function addUser(){
   $('addUserBtn').disabled=true;st('adminStatus','info','جارٍ إنشاء المستخدم…',true);let secApp;
   try{ secApp=initializeApp(firebaseConfig,'sec-'+Date.now()); const secAuth=getAuth(secApp);
     const cred=await createUserWithEmailAndPassword(secAuth,email,pw); const uid=cred.user.uid; await signOut(secAuth);
-    await setDoc(doc(db,'users',uid),{email,name,role,title,active:true,mustChangePassword:true,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
+    const fixedPw=!!($('nu_fixedpw')&&$('nu_fixedpw').checked); // كلمة مرور يوزّعها المدير ⇒ لا طلب تغيير عند أول دخول
+    await setDoc(doc(db,'users',uid),{email,name,role,title,active:true,mustChangePassword:!fixedPw,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
     st('adminStatus','ok','تمت إضافة «'+name+'» ('+role+') ✓');$('nu_email').value='';$('nu_name').value='';$('nu_pw').value='';if($('nu_title'))$('nu_title').value='';
   }catch(err){st('adminStatus','err',errAr(err.code||err.message));}
   finally{if(secApp){try{await deleteApp(secApp);}catch(e){}}$('addUserBtn').disabled=false;}
@@ -1728,7 +1744,8 @@ function renderPermsPanel(c){
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn" id="savePermRoles">حفظ صلاحيات الأدوار</button><button class="btn ghost sm" id="resetPermRoles">إرجاع للافتراضي</button></div><div class="status" id="permStatus"></div></div>'+
     '<div class="card"><h2>سلسلة الاعتماد (م١٤)</h2><p class="muted">الوضع الافتراضي <b>معطّل</b>: اعتماد الجرد بتوقيع واحد كما هو. عند التفعيل يصبح الاعتماد سلسلة من خطوتين بتوقيعين رقميين — <b>اعتماد مالي</b> (المدير المالي) ثم <b>اعتماد عام وقفل</b> (المدير العام) — لا قفزات. امنح المخوّلين صلاحيتَي «الاعتماد المالي (سلسلة م١٤)» و«الاعتماد العام (سلسلة م١٤)» من مصفوفة الصلاحيات أعلاه.</p>'+
     '<label style="display:flex;gap:10px;align-items:center;padding:8px 4px"><input type="checkbox" id="approvalChainToggle"'+(approvalChainOn()?' checked':'')+' style="width:18px;height:18px;cursor:pointer"> <span>تفعيل سلسلة الاعتماد الثلاثية (مراجعة ← اعتماد مالي ← اعتماد عام وقفل)</span></label>'+
-    '<div style="margin-top:10px"><button class="btn" id="saveApprovalChain">حفظ إعداد السلسلة</button></div><div class="status" id="chainStatus"></div></div>'+
+    '<label style="display:flex;gap:10px;align-items:center;padding:8px 4px"><input type="checkbox" id="viewersAfterCloseToggle"'+(viewersAfterCloseOn()?' checked':'')+' style="width:18px;height:18px;cursor:pointer"> <span>المطّلعون يرون جلسات نطاقهم بعد «الإغلاق للمراجعة» فقط — تُخفى عنهم أثناء العدّ، وتبقى ظاهرة بعد الاعتماد. إرجاعها للعدّ يخفيها عنهم مؤقتًا حتى تُغلق من جديد</span></label>'+
+    '<div style="margin-top:10px"><button class="btn" id="saveApprovalChain">حفظ إعدادات الحوكمة</button></div><div class="status" id="chainStatus"></div></div>'+
     '<div class="card"><h2>ميزات اختيارية (م١٩)</h2><p class="muted">مزايا تُفعَّل بقرار الشركة. <b>تحليل الموردين</b> معطّل افتراضيًا؛ عند تفعيله يظهر تقرير «تحليل الموردين» في شاشة «التقارير». حين يكون معطّلًا تُعرض بطاقة مقفلة توضّح أنه مُعطَّل بقرار الشركة.</p>'+
     '<label style="display:flex;gap:10px;align-items:center;padding:8px 4px"><input type="checkbox" id="featSuppliersToggle"'+(featuresSuppliersOn()?' checked':'')+' style="width:18px;height:18px;cursor:pointer"> <span>تفعيل تحليل الموردين 🔒 (تقرير الموردين في التقارير)</span></label>'+
     '<div style="margin-top:10px"><button class="btn" id="saveFeatSuppliers">حفظ إعداد الميزة</button></div><div class="status" id="featStatus"></div>'+
@@ -1841,9 +1858,11 @@ async function savePermRoles(){
 async function saveApprovalChain(){
   if(!can('perms.manage'))return;
   const on=!!($('approvalChainToggle')&&$('approvalChainToggle').checked);
+  const vg=!!($('viewersAfterCloseToggle')&&$('viewersAfterCloseToggle').checked); // «الاطلاع بعد الإغلاق فقط»
   st('chainStatus','info','جارٍ الحفظ…',true);
-  try{ await setDoc(doc(db,'config','permissions'),{approvalChain:on,updatedBy:auth.currentUser.uid,updatedByName:myProfile.name||'',updatedAt:serverTimestamp()},{merge:true});
-    permConfig=permConfig||{roles:{},users:{}}; permConfig.approvalChain=on; st('chainStatus','ok',on?'فُعّلت سلسلة الاعتماد — الاعتماد الآن على خطوتين بتوقيعين ✓':'أُلغيت السلسلة — عاد التوقيع الواحد ✓');
+  try{ await setDoc(doc(db,'config','permissions'),{approvalChain:on,viewersAfterClose:vg,updatedBy:auth.currentUser.uid,updatedByName:myProfile.name||'',updatedAt:serverTimestamp()},{merge:true});
+    permConfig=permConfig||{roles:{},users:{}}; permConfig.approvalChain=on; permConfig.viewersAfterClose=vg;
+    st('chainStatus','ok','حُفظت إعدادات الحوكمة ✓'+(vg?' — المطّلعون يرون الجلسات بعد الإغلاق للمراجعة فقط.':''));
   }catch(err){ st('chainStatus','err','تعذّر الحفظ: '+errAr(err.code||err.message)); }
 }
 async function saveFeatSuppliers(){
@@ -1980,6 +1999,7 @@ function renderAdminCenter(c){
     // 2) الأعلام والميزات
     '<div class="card"><h2>الأعلام والميزات</h2><p class="muted">مجمّعة هنا للتحكّم السريع. هي الأعلام نفسها في «الصلاحيات ← ميزات اختيارية» (تشترك في وثيقة الإعداد ودوالّ الحفظ) — الحفظ من أيّ مكان يسري على الاثنين.</p>'+
     chk('approvalChainToggle',approvalChainOn(),'سلسلة الاعتماد الثلاثية (م١٤) — مراجعة ← اعتماد مالي ← اعتماد عام وقفل')+
+    chk('viewersAfterCloseToggle',viewersAfterCloseOn(),'المطّلعون يرون الجلسات بعد «الإغلاق للمراجعة» فقط (وتبقى بعد الاعتماد) — تُخفى أثناء العدّ')+
     '<div style="margin:2px 0 12px"><button class="btn ghost sm" id="saveApprovalChain">حفظ</button> <span class="status" id="chainStatus" style="display:inline"></span></div>'+
     chk('featSuppliersToggle',featuresSuppliersOn(),'تحليل الموردين 🔒 (تقرير الموردين في التقارير)')+
     '<div style="margin:2px 0 12px"><button class="btn ghost sm" id="saveFeatSuppliers">حفظ</button> <span class="status" id="featStatus" style="display:inline"></span></div>'+
@@ -2121,21 +2141,38 @@ async function acClearLogo(){ if(!can('perms.manage'))return; _brandingLogoData=
 /* ===== مهلة السكون: خروج تلقائي بعد خمول (افتراضي ٣٠ دقيقة) بتنبيه عدّ تنازلي (افتراضي ١٠ ثوانٍ) —
    الإعداد في config/permissions.settings.idle بأثرٍ فوري، و«٠ دقائق» = تعطيل. المتابعة بزرٍ صريح. ===== */
 function idleCfg(){ const s=appSettings().idle||{}; const m=(s.minutes==null)?30:(Number(s.minutes)||0); const w=(s.warnSeconds==null)?10:Math.max(3,Number(s.warnSeconds)||10); return {minutes:m,warnSeconds:w}; }
-let _idleT=null,_idleCd=null,_idleWrap=null,_idleWired=false;
+let _idleT=null,_idleCd=null,_idleWrap=null,_idleWired=false,_idleLast=Date.now(),_idleStampT=0,_idleIv=null;
+function idleKey(){ return 'iomp-idle-last-'+((myProfile&&myProfile.uid)||''); }
+function idleStamp(){ _idleLast=Date.now(); if(_idleLast-_idleStampT>3000){ _idleStampT=_idleLast; try{ localStorage.setItem(idleKey(),String(_idleLast)); }catch(e){} } } // ختم النشاط محليًّا ⇒ الإنفاذ بالوقت الحقيقي حتى بعد النوم/الخلفية/إعادة الفتح
 function idleDismiss(){ if(_idleCd){clearInterval(_idleCd);_idleCd=null;} if(_idleWrap){try{_idleWrap.remove();}catch(e){} _idleWrap=null;} }
 function idleStop(){ if(_idleT){clearTimeout(_idleT);_idleT=null;} idleDismiss(); }
-function idleReset(){ idleStop(); const c=idleCfg(); if(!myProfile||!(c.minutes>0))return;
+function idleGoOut(){ idleStop(); try{ localStorage.removeItem(idleKey()); }catch(e){} window.__idleOut=true; try{ signOut(auth); }catch(e){} try{ toastWarn('لانقضاء مهلة السكون سُجّل خروجك تلقائيًّا — سجّل دخولك من جديد.'); }catch(e){} }
+function idleReset(){ idleStop(); idleStamp(); const c=idleCfg(); if(!myProfile||!(c.minutes>0))return;
   _idleT=setTimeout(idleWarn, Math.max(1000, c.minutes*60000 - c.warnSeconds*1000)); }
-function idleWarn(){ if(!myProfile||_idleWrap)return; const c=idleCfg(); let left=c.warnSeconds;
+function idleWarn(){ if(!myProfile||_idleWrap)return; const c=idleCfg();
+  const deadline=Math.min(_idleLast+c.minutes*60000, Date.now()+c.warnSeconds*1000); // المهلة الحقيقية لا مهلة المؤقّت
+  let left=Math.max(1,Math.ceil((deadline-Date.now())/1000));
   _idleWrap=document.createElement('div'); _idleWrap.id='idleWarn';
   _idleWrap.style.cssText='position:fixed;inset:0;z-index:10001;background:rgba(17,24,39,.55);display:flex;align-items:center;justify-content:center;padding:16px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
   _idleWrap.innerHTML='<div class="card" style="max-width:380px;width:100%;text-align:center;margin:0"><h2 style="margin-bottom:6px">⏳ ما زلت هنا؟</h2><p class="muted" style="font-size:14px">لعدم النشاط سيُسجَّل خروجك تلقائيًّا خلال</p><div id="idleCount" style="font-size:34px;font-weight:800;color:var(--danger);margin:8px 0 14px;font-variant-numeric:tabular-nums">'+left+'</div><button class="btn block" id="idleStay">متابعة الجلسة</button></div>';
   document.body.appendChild(_idleWrap);
   const el=_idleWrap.querySelector('#idleCount'); _idleWrap.querySelector('#idleStay').onclick=()=>idleReset();
-  _idleCd=setInterval(()=>{ left--; if(el)el.textContent=left;
-    if(left<=0){ idleDismiss(); window.__idleOut=true; try{ signOut(auth); }catch(e){} } },1000); }
-function idleInit(){ idleReset(); if(_idleWired)return; _idleWired=true;
-  ['pointerdown','keydown','touchstart','wheel'].forEach(ev=>document.addEventListener(ev,()=>{ if(_idleWrap)return; idleReset(); },{passive:true})); }
+  _idleCd=setInterval(()=>{ left=Math.ceil((deadline-Date.now())/1000); if(el)el.textContent=Math.max(0,left); // بالوقت الحقيقي: نوم الجهاز أثناء العدّ لا يمدّد المهلة
+    if(left<=0){ idleDismiss(); idleGoOut(); } },1000); }
+// الإنفاذ بالوقت الحقيقي: عند العودة للشاشة/الاستيقاظ/كل ١٥ث — انقضى الوقت كاملًا ⇒ خروج فوري بلا تنبيه؛ داخل نافذة التنبيه ⇒ التنبيه بالباقي الحقيقي
+function idleElapsedCheck(){ if(!myProfile)return; const c=idleCfg(); if(!(c.minutes>0))return;
+  const el=Date.now()-_idleLast, total=c.minutes*60000;
+  if(el>=total){ idleGoOut(); return; }
+  if(el>=total-c.warnSeconds*1000 && !_idleWrap) idleWarn(); }
+function idleInit(){
+  const c=idleCfg();
+  if(myProfile&&c.minutes>0){ // إنفاذ عند الإقلاع: غيابٌ تجاوز المهلة وجلسة الدخول محفوظة ⇒ خروج مباشر (حتى لو أُغلق التطبيق كليًّا)
+    try{ const t=Number(localStorage.getItem(idleKey()))||0; if(t&&(Date.now()-t)>=c.minutes*60000){ idleGoOut(); return; } }catch(e){} }
+  idleReset(); if(_idleWired)return; _idleWired=true;
+  ['pointerdown','keydown','touchstart','wheel'].forEach(ev=>document.addEventListener(ev,()=>{ if(_idleWrap)return; idleReset(); },{passive:true}));
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState!=='hidden')idleElapsedCheck(); });
+  try{ window.addEventListener('focus',idleElapsedCheck); window.addEventListener('pageshow',idleElapsedCheck); }catch(e){}
+  _idleIv=setInterval(idleElapsedCheck,15000); }
 // مجموع تحقّقي حتمي (FNV-1a) على نصّ الحمولة — يكشف التلف/التعديل في ملفّ النسخة
 function acChecksum(str){ let h=0x811c9dc5>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return 'FNV-'+(h>>>0).toString(16).padStart(8,'0').toUpperCase(); }
 // يبني نصّ النسخة الاحتياطية: إعدادات+أعلام+أدوار+مستودعات من config/permissions، مع طابع ومجموع تحقّقي
