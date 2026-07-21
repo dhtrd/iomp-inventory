@@ -48,6 +48,7 @@ function __colSnap(path){ const docs=__colDocs(path); return {forEach:cb=>docs.f
 // --- API surface ---
 const initializeApp=()=>({}), deleteApp=()=>Promise.resolve();
 const getFirestore=()=>({}), getAuth=()=>__auth;
+const initializeFirestore=(a,o)=>({}), persistentLocalCache=(o)=>({}), persistentMultipleTabManager=()=>({}); // بدائل كاش Firestore الدائم
 const __user = __SC.user || {uid:(__SC.profile&&__SC.profile.uid)||'u_owner', email:(__SC.profile&&__SC.profile.email)||'a2@dhtrd.com'};
 const __auth = { currentUser: {uid:__user.uid, email:__user.email} };
 function onAuthStateChanged(a, cb){ setTimeout(()=>cb(__auth.currentUser), 0); return ()=>{}; }
