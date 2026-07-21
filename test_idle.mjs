@@ -45,18 +45,20 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   ok('I3 حقلا السكون في «تخصيص النظام» والحفظ يثبّت ٤٥/١٥', has&&saved&&saved.minutes===45&&saved.warnSeconds===15, JSON.stringify(saved));
   await page.close(); }
 
-// I4 — الإنفاذ بالوقت الحقيقي: انقضى الوقت كاملًا (نوم/خلفية) ⇒ خروج فوري بلا تنبيه
+// I4 — فاتته نافذة العدّ التنازلي كلها (المدة + التنبيه) ⇒ خروج مباشر
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER]});
-  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-31*60000); window.__idleCheck(); }); await page.waitForTimeout(200);
+  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-31*60000); window.__idleCheck(); }); await page.waitForTimeout(200); // ٣١ دقيقة > ٣٠:١٠
   const r=await page.evaluate(()=>({ out:!!window.__idleOut, warn:!!document.getElementById('idleWarn') }));
-  ok('I4 غياب تجاوز المهلة ⇒ خروج مباشر دون تنبيه', r.out===true&&!r.warn, JSON.stringify(r));
+  ok('I4 لم يلحق العدّ التنازلي ⇒ خروج مباشر دون تنبيه', r.out===true&&!r.warn, JSON.stringify(r));
   await page.close(); }
 
-// I5 — داخل نافذة التنبيه: يظهر التنبيه بالباقي الحقيقي (لا عدّاد مؤقّتات مؤجَّل)
+// I5 — العدّ التنازلي يبدأ عند تمام المدة بالساعة الفعلية: عاد والعدّ جارٍ ⇒ يراه بالباقي الحقيقي ويستطيع اللحاق
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER]});
-  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-(30*60000-5000)); window.__idleCheck(); }); await page.waitForTimeout(250);
+  await page.evaluate(()=>{ window.__idleLastSet(Date.now()-(30*60000+5000)); window.__idleCheck(); }); await page.waitForTimeout(250); // خمل ٣٠:٠٥ ⇒ بقي ~٥ من نافذة ١٠
   const r=await page.evaluate(()=>({ out:!!window.__idleOut, warn:!!document.getElementById('idleWarn'), n:Number((document.getElementById('idleCount')||{}).textContent||0) }));
-  ok('I5 داخل نافذة التنبيه ⇒ تنبيه بباقٍ حقيقي (٠<ن≤١٠)', !r.out&&r.warn&&r.n>0&&r.n<=10, JSON.stringify(r));
+  ok('I5 عاد أثناء العدّ التنازلي ⇒ يراه بالباقي الحقيقي (~٥) بلا خروج', !r.out&&r.warn&&r.n>=3&&r.n<=6, JSON.stringify(r));
+  const stay=await page.evaluate(()=>{ document.getElementById('idleStay').click(); return { warn:!!document.getElementById('idleWarn'), out:!!window.__idleOut }; });
+  ok('I5 «متابعة الجلسة» تلحقه قبل الإغلاق', !stay.warn&&!stay.out, JSON.stringify(stay));
   await page.close(); }
 
 // I6 — إنفاذ عند الإقلاع: جلسة محفوظة وغياب طويل ⇒ خروج فور الفتح (حتى بعد إغلاق التطبيق كليًّا)

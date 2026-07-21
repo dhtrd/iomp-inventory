@@ -2148,9 +2148,10 @@ function idleDismiss(){ if(_idleCd){clearInterval(_idleCd);_idleCd=null;} if(_id
 function idleStop(){ if(_idleT){clearTimeout(_idleT);_idleT=null;} idleDismiss(); }
 function idleGoOut(){ idleStop(); try{ localStorage.removeItem(idleKey()); }catch(e){} window.__idleOut=true; try{ signOut(auth); }catch(e){} try{ toastWarn('لانقضاء مهلة السكون سُجّل خروجك تلقائيًّا — سجّل دخولك من جديد.'); }catch(e){} }
 function idleReset(){ idleStop(); idleStamp(); const c=idleCfg(); if(!myProfile||!(c.minutes>0))return;
-  _idleT=setTimeout(idleWarn, Math.max(1000, c.minutes*60000 - c.warnSeconds*1000)); }
+  _idleT=setTimeout(idleWarn, Math.max(1000, c.minutes*60000)); } // العدّ التنازلي يبدأ عند تمام مدة السكون (اعتماد العميل: ٣:٠٤ + ٣٠د ⇒ يبدأ ٣:٣٤)
 function idleWarn(){ if(!myProfile||_idleWrap)return; const c=idleCfg();
-  const deadline=Math.min(_idleLast+c.minutes*60000, Date.now()+c.warnSeconds*1000); // المهلة الحقيقية لا مهلة المؤقّت
+  // موعد الخروج بالساعة الفعلية: بداية الخمول + المدة + نافذة التنبيه — والعائد متأخرًا يرى الباقي الحقيقي فقط
+  const deadline=Math.min(_idleLast+c.minutes*60000+c.warnSeconds*1000, Date.now()+c.warnSeconds*1000);
   let left=Math.max(1,Math.ceil((deadline-Date.now())/1000));
   _idleWrap=document.createElement('div'); _idleWrap.id='idleWarn';
   _idleWrap.style.cssText='position:fixed;inset:0;z-index:10001;background:rgba(17,24,39,.55);display:flex;align-items:center;justify-content:center;padding:16px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)';
@@ -2159,15 +2160,16 @@ function idleWarn(){ if(!myProfile||_idleWrap)return; const c=idleCfg();
   const el=_idleWrap.querySelector('#idleCount'); _idleWrap.querySelector('#idleStay').onclick=()=>idleReset();
   _idleCd=setInterval(()=>{ left=Math.ceil((deadline-Date.now())/1000); if(el)el.textContent=Math.max(0,left); // بالوقت الحقيقي: نوم الجهاز أثناء العدّ لا يمدّد المهلة
     if(left<=0){ idleDismiss(); idleGoOut(); } },1000); }
-// الإنفاذ بالوقت الحقيقي: عند العودة للشاشة/الاستيقاظ/كل ١٥ث — انقضى الوقت كاملًا ⇒ خروج فوري بلا تنبيه؛ داخل نافذة التنبيه ⇒ التنبيه بالباقي الحقيقي
+// الإنفاذ بالوقت الحقيقي (اعتماد العميل): العدّ التنازلي يبدأ عند تمام المدة ولو خارج الشاشة —
+// عاد داخل نافذة التنبيه ⇒ يرى العدّ بالباقي الحقيقي ويستطيع «متابعة الجلسة»؛ فاتته النافذة كلها ⇒ خروج مباشر
 function idleElapsedCheck(){ if(!myProfile)return; const c=idleCfg(); if(!(c.minutes>0))return;
-  const el=Date.now()-_idleLast, total=c.minutes*60000;
+  const el=Date.now()-_idleLast, total=c.minutes*60000+c.warnSeconds*1000;
   if(el>=total){ idleGoOut(); return; }
-  if(el>=total-c.warnSeconds*1000 && !_idleWrap) idleWarn(); }
+  if(el>=c.minutes*60000 && !_idleWrap) idleWarn(); }
 function idleInit(){
   const c=idleCfg();
-  if(myProfile&&c.minutes>0){ // إنفاذ عند الإقلاع: غيابٌ تجاوز المهلة وجلسة الدخول محفوظة ⇒ خروج مباشر (حتى لو أُغلق التطبيق كليًّا)
-    try{ const t=Number(localStorage.getItem(idleKey()))||0; if(t&&(Date.now()-t)>=c.minutes*60000){ idleGoOut(); return; } }catch(e){} }
+  if(myProfile&&c.minutes>0){ // إنفاذ عند الإقلاع: غيابٌ تجاوز (المدة + نافذة التنبيه) وجلسة الدخول محفوظة ⇒ خروج مباشر (حتى لو أُغلق التطبيق كليًّا)
+    try{ const t=Number(localStorage.getItem(idleKey()))||0; if(t&&(Date.now()-t)>=(c.minutes*60000+c.warnSeconds*1000)){ idleGoOut(); return; } }catch(e){} }
   idleReset(); if(_idleWired)return; _idleWired=true;
   ['pointerdown','keydown','touchstart','wheel'].forEach(ev=>document.addEventListener(ev,()=>{ if(_idleWrap)return; idleReset(); },{passive:true}));
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState!=='hidden')idleElapsedCheck(); });
