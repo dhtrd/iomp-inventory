@@ -218,7 +218,15 @@ window.__setSessSig = (a)=>{ _sessSig=a; };
 window.__sessSigCollect = ()=>sessSigCollect();
 window.__createSession = ()=>createSession();
 window.__handoverReady = ()=>handoverReady();
-window.__exportAoa = (reason)=>{ const R=EXPORT_REASONS[reason]; return R&&R.cols?excelSheetFromCols(exportRowsFor(R),R.cols):null; };
+window.__exportAoa = (reason)=>{ const R=EXPORT_REASONS[reason]; return R&&R.cols?excelSheetFromCols(exportRowsFor(R),finFilterCols(R.cols)):null; }; // م٦-١: كما في مسار الإنتاج
+// م٦: خطاطيف القيم المالية وأسباب المخرجات
+window.__canSeeFinance = ()=>canSeeFinance();
+window.__reasonAllowed = (k)=>reasonAllowed(k);
+window.__printReasonsAllowed = ()=>printReasonsAllowed();
+window.__exportReasonsAllowed = ()=>exportReasonsAllowed();
+window.__finFilterCols = (cols)=>finFilterCols(cols);
+window.__detailedAoa = ()=>exportDetailedAoa();
+window.__repxTableData = (name)=>repxTableData(name);
 window.__repxXlsxAoa = (name)=>repxXlsxAoa(name);
 window.__openPrintDialog = ()=>{ try{ openPrintDialog(); }catch(e){} };
 window.__openExportDialog = ()=>{ try{ openExportDialog(); }catch(e){} };

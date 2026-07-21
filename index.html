@@ -999,6 +999,15 @@ const CAPS = [
   {key:'report.view.own', label:'عرض تقاريره الخاصة فقط',  hint:'تقارير الجلسات التي كُلِّف بها أو أنشأها فقط'},
   {key:'report.view.location',label:'عرض تقارير مستودعه فقط',hint:'تقارير جلسات المستودعات المسندة إليه فقط'},
   {key:'report.export',   label:'التصدير والطباعة',       hint:'تصدير Excel وطباعة التقارير والمحاضر'},
+  {key:'report.finance',  label:'القيم المالية في التقارير', hint:'رؤية التكلفة والقيم المالية (الدفترية/الفعلية/قيمة الفرق وقيمة المخزون) في التقارير والطباعة والتصدير — عند المنع تظهر الكميات فقط (م٦-١)'},
+  {key:'reason.branch',          label:'مخرجات: مراجعة الفرع',       hint:'إظهار سبب «مراجعة الفرع» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.detailed',        label:'مخرجات: تقرير مفصل',         hint:'إظهار سبب «تقرير مفصل» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.committee',       label:'مخرجات: محضر لجنة الجرد',     hint:'إظهار سبب «محضر لجنة الجرد» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.mgmt',            label:'مخرجات: تقرير للإدارة',       hint:'إظهار سبب «تقرير للإدارة» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.varianceSummary', label:'مخرجات: محضر ملخّص الفروقات', hint:'إظهار سبب «محضر ملخّص الفروقات» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.handover',        label:'مخرجات: محضر استلام مخزون',   hint:'إظهار سبب «محضر استلام مخزون» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.custody',         label:'مخرجات: محضر عهدة',           hint:'إظهار سبب «محضر عهدة» في نافذتَي الطباعة وتصدير Excel (م٦-٢)'},
+  {key:'reason.upload',          label:'مخرجات: رفع الجرد (لأودو)',   hint:'إظهار سبب «رفع الجرد» في نافذة تصدير Excel — تصدير فقط (م٦-٢)'},
   {key:'warehouse.manage',label:'إدارة المستودعات',       hint:'إضافة/تعديل/حذف المواقع والمستودعات'},
   {key:'stock.move',      label:'قيد حركات المخزون',      hint:'تسجيل حركات الإدخال/الصرف/التحويل في دفتر الحركات (م١٦) — خلف علم اختياري'},
   {key:'branch.manage',   label:'إدارة فرع',              hint:'إدارة جلسات جرد فرعه ومؤشّراته ومقارنته (م١٧) — خلف علم اختياري؛ يُسند للمدير المسؤول عن الفرع (مقيَّد بمستودعات فرعه)'},
@@ -1013,9 +1022,9 @@ const CAP_KEYS = CAPS.map(c=>c.key);
 const ALL_CAPS = v=>{const o={};CAP_KEYS.forEach(k=>o[k]=v);return o;};
 const DEFAULT_CAPS = {
   'مدير':       ALL_CAPS(true),
-  'مدير مخزون': {count:true,'session.create':true,'session.assign':true,'session.close':true,'session.review':true,'session.approve':true,'session.reopen':false,'session.delete':true,'report.view':true,'report.view.own':false,'report.view.location':false,'report.export':true,'warehouse.manage':true,'stock.move':true,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':true,'trash.purge':false,'pw.change':true,'pw.request':true},
-  'عدّاد':      {count:true,'session.create':false,'session.assign':false,'session.close':false,'session.review':false,'session.approve':false,'session.reopen':false,'session.delete':false,'report.view':false,'report.view.own':false,'report.view.location':false,'report.export':false,'warehouse.manage':false,'stock.move':false,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':false,'trash.purge':false,'pw.change':false,'pw.request':false},
-  'مطّلع':      {count:false,'session.create':false,'session.assign':false,'session.close':false,'session.review':false,'session.approve':false,'session.reopen':false,'session.delete':false,'report.view':true,'report.view.own':false,'report.view.location':false,'report.export':true,'warehouse.manage':false,'stock.move':false,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':false,'trash.purge':false,'pw.change':true,'pw.request':true}
+  'مدير مخزون': {count:true,'session.create':true,'session.assign':true,'session.close':true,'session.review':true,'session.approve':true,'session.reopen':false,'session.delete':true,'report.view':true,'report.view.own':false,'report.view.location':false,'report.export':true,'report.finance':true,'reason.branch':true,'reason.detailed':true,'reason.committee':true,'reason.mgmt':true,'reason.varianceSummary':true,'reason.handover':true,'reason.custody':true,'reason.upload':true,'warehouse.manage':true,'stock.move':true,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':true,'trash.purge':false,'pw.change':true,'pw.request':true},
+  'عدّاد':      {count:true,'session.create':false,'session.assign':false,'session.close':false,'session.review':false,'session.approve':false,'session.reopen':false,'session.delete':false,'report.view':false,'report.view.own':false,'report.view.location':false,'report.export':false,'report.finance':false,'reason.branch':true,'reason.detailed':true,'reason.committee':true,'reason.mgmt':true,'reason.varianceSummary':true,'reason.handover':true,'reason.custody':true,'reason.upload':true,'warehouse.manage':false,'stock.move':false,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':false,'trash.purge':false,'pw.change':false,'pw.request':false},
+  'مطّلع':      {count:false,'session.create':false,'session.assign':false,'session.close':false,'session.review':false,'session.approve':false,'session.reopen':false,'session.delete':false,'report.view':true,'report.view.own':false,'report.view.location':false,'report.export':true,'report.finance':false,'reason.branch':true,'reason.detailed':false,'reason.committee':false,'reason.mgmt':false,'reason.varianceSummary':false,'reason.handover':false,'reason.custody':false,'reason.upload':false,'warehouse.manage':false,'stock.move':false,'branch.manage':false,'users.manage':false,'perms.manage':false,'trash.restore':false,'trash.purge':false,'pw.change':true,'pw.request':true}
 };
 const _hasCap=(m,k)=>m&&Object.prototype.hasOwnProperty.call(m,k)&&m[k]!=null;
 function isOwner(){ return !!(myProfile && myProfile.email===OWNER_EMAIL); }
@@ -1030,6 +1039,16 @@ function canManageSessions(){ return can('session.create')||can('session.assign'
 function userLocationsOf(uid){ const ul=permConfig&&permConfig.userLocations&&permConfig.userLocations[uid]; return Array.isArray(ul)?ul:[]; }
 function myLocations(){ return myProfile?userLocationsOf(myProfile.uid):[]; }
 function canViewAnyReports(){ return can('report.view')||can('report.view.own')||can('report.view.location'); }
+// م٦-١: «القيم المالية في التقارير» — صلاحية قابلة للتخصيص دورًا وفردًا؛ عند المنع تُعرض الكميات فقط
+// في تقرير الفروقات وشاشة التقارير والطباعة وتصدير Excel (التكلفة/القيم/قيمة الفرق/قيمة المخزون تُحجب).
+function canSeeFinance(){ return can('report.finance'); }
+const FIN_COLS={cost:1,bookVal:1,countedVal:1,varVal:1}; // مفاتيح أعمدة الطباعة/التصدير المالية
+function finFilterCols(cols){ return canSeeFinance()?cols:(cols||[]).filter(k=>!FIN_COLS[k]); }
+// م٦-٢: أسباب الطباعة/التصدير المسموحة — لكل سبب صلاحية reason.<key> قابلة للتخصيص دورًا وفردًا؛
+// المطّلع افتراضيًّا يرى «مراجعة الفرع» فقط، وبلا أي سبب مسموح يختفي زرا الطباعة/التصدير كليًّا.
+function reasonAllowed(k){ return can('reason.'+k); }
+function printReasonsAllowed(){ return can('report.export')?Object.keys(PRINT_REASONS).filter(reasonAllowed):[]; }
+function exportReasonsAllowed(){ return can('report.export')?Object.keys(EXPORT_REASONS).filter(reasonAllowed):[]; }
 // إعداد «الاطلاع بعد الإغلاق فقط» (طلب العميل): حين يُفعَّل، «المطّلع فقط» لا يرى الجلسة وهي مفتوحة (أثناء العد)،
 // وتظهر له فور الإغلاق للمراجعة وتبقى ظاهرة بعد الاعتماد. المكلَّفون والمنشئ وفريق الحوكمة لا يتأثرون.
 // وإن أُرجعت للعدّ اختفت عنه فورًا، وإذا أُغلقت ثانيةً ظهرت له بآخر التعديلات (التقرير يقرأ الحالة الحيّة دومًا).
@@ -2926,12 +2945,13 @@ function docVarCtx(reasonKey,rows){ const s2=summarize(rows||[]); const R=PRINT_
   const cp=(repSess&&repSess.custodyPrev)||{}, cn=(repSess&&repSess.custodyNext)||{};
   const who=x=>x&&x.name?(x.name+(x.title?' — '+x.title:'')):'—';
   const qty=(rows||[]).reduce((a,r)=>a+(Number(r.counted)||0),0);
+  const finV=canSeeFinance(); // م٦-١: المتغيّرات المالية في القوالب تُستبدل بـ«—» لغير حاملي الصلاحية
   return { '{company}':'شركة الضبيبي التجارية','{document}':R.label,'{session}':(repSess&&repSess.name)||'','{location}':(repSess&&repSess.location)||'—',
-    '{date}':officialDate(),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':fmt(round2(s2.netVar)),'{approver}':((repSess&&repSess.approvedByName)||'—'),
+    '{date}':officialDate(),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':finV?fmt(round2(s2.netVar)):'—','{approver}':((repSess&&repSess.approvedByName)||'—'),
     '{committee}':docSignatories().map(x=>x.name?(x.label+': '+x.name):x.label).join('، ')||'—', // موقّعو الجلسة المسجّلون (مسمى: اسم) لهم الأولوية
     '{newResp}':who(cn),'{oldResp}':who(cp),
     '{branchMgr}':((repSess&&repSess.responsible&&repSess.responsible.name)||(repSess&&repSess.custodyNext&&repSess.custodyNext.name)||'—'), // مسؤول الموقع المسجَّل بالجلسة (وبعد الاستلام: المستلم الجديد)
-    '{totalCost}':fmt(round2(s2.bookVal)),'{totalActual}':fmt(round2(s2.countedVal)),'{onHand}':fmt(round2(qty)) }; }
+    '{totalCost}':finV?fmt(round2(s2.bookVal)):'—','{totalActual}':finV?fmt(round2(s2.countedVal)):'—','{onHand}':fmt(round2(qty)) }; }
 function docSubst(text,ctx){ let t=String(text==null?'':text); Object.keys(ctx).forEach(k=>{ t=t.split(k).join(ctx[k]); }); return t; }
 function docTemplate(reasonKey){ return (appSettings().docTemplates||{})[reasonKey]||{}; }
 const APP_VERSION='IOMP 1.1 (م١٤–م٣٠ + إصلاحات التدقيق ١–٥ والكفاءة)'; // إصلاح-٦ (بند ٨): تحديث بطاقة الإصدار
@@ -3714,7 +3734,7 @@ function renderReportShell(){
   c.innerHTML=''+
     '<div class="card reportcard"><div id="repHeadBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><button class="btn ghost sm" id="repBack">→ رجوع</button>'+
       '<div style="flex:1;min-width:160px"><h2 style="margin:0">تقرير الفروقات — '+esc(repSess.name)+'</h2><div class="muted">'+esc(repSess.location||'')+' • '+(repSess.blind?'جلسة عمياء • ':'')+'الأصناف: '+fmt(repItems.length)+'</div></div>'+
-      (can('report.export')?'<button class="btn ghost sm" id="repPrint">🖨 طباعة</button><button class="btn sm" id="repXlsx">⬇ تصدير Excel</button>':'')+'</div>'+
+      (printReasonsAllowed().length?'<button class="btn ghost sm" id="repPrint">🖨 طباعة</button>':'')+(exportReasonsAllowed().length?'<button class="btn sm" id="repXlsx">⬇ تصدير Excel</button>':'')+'</div>'+
       '<div class="tiles" id="repTiles" style="margin-top:14px"></div>'+
       '<div class="rtools">'+
         '<input id="repSearch" placeholder="بحث بالكود أو الاسم…">'+
@@ -3737,7 +3757,7 @@ function renderReportShell(){
 function recomputeReport(){ repRows=computeVariance(repItems,repCounts); repRows.forEach(r=>{ const nn=repNotes[String(r.code)]; r.notes=(nn&&nn.notes)||[]; }); if($('repTiles'))renderReportSummary(); renderReportRows(); }
 function repHasNotes(){ return repRows.some(r=>r.notes&&r.notes.length); } // عمود «الملاحظات» يظهر تلقائيًّا متى وُجدت ملاحظة واحدة على الأقل
 function renderReportSummary(){
-  const s=summarize(repRows); const hasCost=s.withCost>0;
+  const s=summarize(repRows); const fin=canSeeFinance(); const hasCost=fin&&s.withCost>0; // م٦-١: بلا الصلاحية المالية تُحجب بلاطات القيم كليًّا
   const money=n=>hasCost?fmt(round2(n)):'—';
   const active=$('repStatus')?$('repStatus').value:'all';
   const tile=(k,v,cls)=>'<div class="tile"><div class="k">'+k+'</div><div class="v'+(cls?' '+cls:'')+'">'+v+'</div></div>';
@@ -3751,9 +3771,9 @@ function renderReportSummary(){
     ftile('عجز',fmt(s.deficit),s.deficit?'neg':'','deficit')+
     ftile('زيادة',fmt(s.upTotal),'','surplus')+
     ftile('خارج الدفتر',fmt(s.extra),'','extra')+
-    vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
+    (fin?vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
     vtile('إجمالي القيمة الفعلية',money(s.countedVal))+
-    tile('صافي قيمة الفروقات',money(s.netVar),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):'');
+    tile('صافي قيمة الفروقات',money(s.netVar),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):''):'');
   $('repTiles').querySelectorAll('[data-f]').forEach(t=>t.onclick=()=>{ const rs=$('repStatus'); if(rs){ rs.value=t.getAttribute('data-f'); if(rs._mselSync)rs._mselSync(); } renderReportRows(); renderReportSummary(); });
 }
 // الترشيح المشترك (يستعمله العرض والطباعة) — يُعيد كامل المطابق للمرشّحات الحالية
@@ -3761,6 +3781,7 @@ function filteredReportRows(){
   const q=($('repSearch')?$('repSearch').value:'').trim().toLowerCase();
   const cat=$('repCat')?$('repCat').value:'';
   const stf=$('repStatus')?$('repStatus').value:'all';
+  if(repSortKey&&!canSeeFinance()&&(repSortKey==='cost'||repSortKey==='bookValue'||repSortKey==='countedValue'||repSortKey==='varValue'))repSortKey=''; // م٦-١: لا فرز بأعمدة مالية محجوبة
   let rows=repRows;
   if(cat)rows=rows.filter(r=>r.category===cat);
   if(q){ const qn=arNorm(q); rows=rows.filter(r=>(r.code&&arNorm(r.code).indexOf(qn)>=0)||(r.name&&arNorm(r.name).indexOf(qn)>=0)||(r.barcode&&arNorm(r.barcode).indexOf(qn)>=0)||(r.notes&&r.notes.some(n=>arNorm(n.text||'').indexOf(qn)>=0))); }
@@ -3786,7 +3807,8 @@ function renderReportRows(){
   const car=k=>repSortKey===k?(repSortDir>0?' ▲':' ▼'):'';
   const H=(k,lbl,num)=>'<th class="rsh'+(num?' num':'')+'" data-rsort="'+k+'" style="cursor:pointer;user-select:none">'+lbl+car(k)+'</th>';
   const showNotes=repHasNotes(); // «الملاحظات» عمود تلقائي متى سُجّلت ملاحظات (طلب العميل: تصدر في التقارير)
-  const head='<table><thead><tr>'+H('code','الكود')+H('name','الصنف')+H('category','الفئة')+H('book','الدفتري',1)+H('counted','المعدود',1)+H('diff','الفرق',1)+H('status','الحالة')+H('cost','التكلفة',1)+H('bookValue','القيمة الدفترية',1)+H('countedValue','القيمة الفعلية',1)+H('varValue','قيمة الفرق',1)+(showWho?'<th>من أضاف</th>':'')+(showNotes?'<th>الملاحظات</th>':'')+'</tr></thead>';
+  const fin=canSeeFinance(); // م٦-١: الأعمدة المالية تظهر لحاملي «القيم المالية في التقارير» فقط — الكميات للجميع
+  const head='<table><thead><tr>'+H('code','الكود')+H('name','الصنف')+H('category','الفئة')+H('book','الدفتري',1)+H('counted','المعدود',1)+H('diff','الفرق',1)+H('status','الحالة')+(fin?H('cost','التكلفة',1)+H('bookValue','القيمة الدفترية',1)+H('countedValue','القيمة الفعلية',1)+H('varValue','قيمة الفرق',1):'')+(showWho?'<th>من أضاف</th>':'')+(showNotes?'<th>الملاحظات</th>':'')+'</tr></thead>';
   const body=shown.map(r=>{
     const diffCell=r.hasDiff?colored(r.diff,fmt(r.diff)):'—';
     const varCell=r.varValue!=null?colored(r.varValue,fmt(round2(r.varValue))):'—';
@@ -3798,46 +3820,51 @@ function renderReportRows(){
       '<td class="num">'+(r.isCounted?fmt(r.counted):'—')+'</td>'+
       '<td class="num">'+diffCell+'</td>'+
       '<td><span class="st '+r.status+'">'+STLABEL[r.status]+'</span>'+((r.book!=null&&r.book<0)?' <span class="tag" style="font-size:10px" title="رُفع في ملف الجرد برصيد دفتري سالب — يُحسب ضمن الزيادات">دفتري سالب</span>':'')+'</td>'+
-      '<td class="num">'+(r.cost!=null?fmt(r.cost):'—')+'</td>'+
+      (fin?'<td class="num">'+(r.cost!=null?fmt(r.cost):'—')+'</td>'+
       '<td class="num">'+(r.bookValue!=null?fmt(round2(r.bookValue)):'—')+'</td>'+
       '<td class="num">'+(r.countedValue!=null?fmt(round2(r.countedValue)):'—')+'</td>'+
-      '<td class="num">'+varCell+'</td>'+whoCell+notesCell+'</tr>';
+      '<td class="num">'+varCell+'</td>':'')+whoCell+notesCell+'</tr>';
   }).join('');
   const tfoot=shown.length?('<tfoot><tr><td colspan="3">الإجمالي (حسب المرشّح) · '+fmt(rows.length)+' صنف</td>'+
     '<td class="num">'+(aB?fmt(round2(tBook)):'—')+'</td>'+
     '<td class="num">'+(aC?fmt(round2(tCounted)):'—')+'</td>'+
     '<td class="num">'+colored(tDiff,fmt(round2(tDiff)))+'</td>'+
-    '<td></td><td></td>'+
+    '<td></td>'+(fin?'<td></td>'+
     '<td class="num">'+(aBV?fmt(round2(tBookVal)):'—')+'</td>'+
     '<td class="num">'+(aCV?fmt(round2(tCountedVal)):'—')+'</td>'+
-    '<td class="num">'+(aV?colored(tVar,fmt(round2(tVar))):'—')+'</td>'+
+    '<td class="num">'+(aV?colored(tVar,fmt(round2(tVar))):'—')+'</td>':'')+
     (showWho?'<td></td>':'')+(showNotes?'<td></td>':'')+'</tr></tfoot>'):'';
-  const bodyHtml=shown.length?body:'<tr><td colspan="'+(11+(showWho?1:0)+(showNotes?1:0))+'" class="muted" style="padding:14px">لا أصناف مطابقة للمرشّحات.</td></tr>';
+  const bodyHtml=shown.length?body:'<tr><td colspan="'+((fin?11:7)+(showWho?1:0)+(showNotes?1:0))+'" class="muted" style="padding:14px">لا أصناف مطابقة للمرشّحات.</td></tr>';
   $('repTable').innerHTML=head+'<tbody>'+bodyHtml+'</tbody>'+tfoot+'</table>';
   // ر٤: نقر رأس العمود يفرز (تبديل الاتجاه عند تكرار العمود)
   $('repTable').onclick=(e)=>{ const th=e.target.closest('[data-rsort]'); if(!th)return;
     const k=th.getAttribute('data-rsort'); if(repSortKey===k)repSortDir*=-1; else{ repSortKey=k; repSortDir=1; } renderReportRows(); };
   if($('repNote'))$('repNote').textContent='عرض '+fmt(shown.length)+' من '+fmt(rows.length)+' صنف مطابق'+(rows.length>500?' — ضيّق بالبحث/الفئة أو صدّر Excel للكل':'')+'.';
 }
-async function exportDetailedExcel(){
-  try{ await loadXLSX(); }catch(e){ toastErr('تعذّر إنشاء Excel (لا اتصال بالمكتبة).');return; }
-  const rows=repRows;
-  const detail=[['الكود','الصنف','الفئة','الوحدة','الرصيد الدفتري','المعدود','الفرق','الحالة','التكلفة','القيمة الدفترية','القيمة الفعلية','قيمة الفرق','من أضاف','الملاحظات']];
-  rows.forEach(r=>detail.push([r.code,r.name,r.category,r.unit,(r.book!=null?r.book:''),(r.isCounted?r.counted:''),(r.hasDiff?r.diff:''),STLABEL[r.status],(r.cost!=null?r.cost:''),(r.bookValue!=null?round2(r.bookValue):''),(r.countedValue!=null?round2(r.countedValue):''),(r.varValue!=null?round2(r.varValue):''),r.who.map(w=>w.name+': '+w.q).join(' / '),((r.notes||[]).map(n=>n.text+(n.byName?' ('+n.byName+')':'')).join(' ؛ '))]));
+// م٦-١: بناء مصفوفتَي التصدير المفصّل (تفاصيل + ملخّص) — دالة صرفة قابلة للفحص؛ بلا الصلاحية المالية تُحذف أعمدة القيم من الورقتين
+function exportDetailedAoa(){
+  const rows=repRows; const fin=canSeeFinance();
+  const detail=[['الكود','الصنف','الفئة','الوحدة','الرصيد الدفتري','المعدود','الفرق','الحالة'].concat(fin?['التكلفة','القيمة الدفترية','القيمة الفعلية','قيمة الفرق']:[]).concat(['من أضاف','الملاحظات'])];
+  rows.forEach(r=>detail.push([r.code,r.name,r.category,r.unit,(r.book!=null?r.book:''),(r.isCounted?r.counted:''),(r.hasDiff?r.diff:''),STLABEL[r.status]].concat(fin?[(r.cost!=null?r.cost:''),(r.bookValue!=null?round2(r.bookValue):''),(r.countedValue!=null?round2(r.countedValue):''),(r.varValue!=null?round2(r.varValue):'')]:[]).concat([r.who.map(w=>w.name+': '+w.q).join(' / '),((r.notes||[]).map(n=>n.text+(n.byName?' ('+n.byName+')':'')).join(' ؛ '))])));
   // صفّ إجماليات ورقة التفاصيل
   let eB=0,eC=0,eD=0,eV=0,eBV=0,eCV=0; rows.forEach(r=>{ if(r.book!=null)eB+=r.book; if(r.isCounted)eC+=r.counted; if(r.hasDiff)eD+=r.diff; if(r.varValue!=null)eV+=r.varValue; if(r.bookValue!=null)eBV+=r.bookValue; if(r.countedValue!=null)eCV+=r.countedValue; });
   detail.push([]);
-  detail.push(['الإجمالي','','','',round2(eB),round2(eC),round2(eD),'','',round2(eBV),round2(eCV),round2(eV),'','']);
+  detail.push(['الإجمالي','','','',round2(eB),round2(eC),round2(eD),''].concat(fin?['',round2(eBV),round2(eCV),round2(eV)]:[]).concat(['','']));
   const cats=summarizeByCategory(rows);
-  const summary=[['الفئة','عدد الأصناف','المعدود منها','قيمة الرصيد الدفتري','قيمة المعدود','صافي قيمة الفروقات']];
-  cats.forEach(g=>summary.push([g.cat,g.items,g.counted,round2(g.bookVal),round2(g.countedVal),round2(g.netVar)]));
+  const summary=[fin?['الفئة','عدد الأصناف','المعدود منها','قيمة الرصيد الدفتري','قيمة المعدود','صافي قيمة الفروقات']:['الفئة','عدد الأصناف','المعدود منها']];
+  cats.forEach(g=>summary.push(fin?[g.cat,g.items,g.counted,round2(g.bookVal),round2(g.countedVal),round2(g.netVar)]:[g.cat,g.items,g.counted]));
   const s=summarize(rows);
   summary.push([]);
-  summary.push(['الإجمالي',s.total,s.counted,round2(s.bookVal),round2(s.countedVal),round2(s.netVar)]);
-  summary.push(['لم تُعد بعد (قيمة دفترية)',s.uncounted,'','',round2(s.uncountedBookVal),'']);
+  summary.push(fin?['الإجمالي',s.total,s.counted,round2(s.bookVal),round2(s.countedVal),round2(s.netVar)]:['الإجمالي',s.total,s.counted]);
+  summary.push(fin?['لم تُعد بعد (قيمة دفترية)',s.uncounted,'','',round2(s.uncountedBookVal),'']:['لم تُعد بعد',s.uncounted,'']);
+  return {detail:detail,summary:summary,fin:fin};
+}
+async function exportDetailedExcel(){
+  try{ await loadXLSX(); }catch(e){ toastErr('تعذّر إنشاء Excel (لا اتصال بالمكتبة).');return; }
+  const aoa=exportDetailedAoa(); const detail=aoa.detail, summary=aoa.summary, fin=aoa.fin;
   const wb=XLSX.utils.book_new();
-  const ws1=XLSX.utils.aoa_to_sheet(detail); ws1['!cols']=[{wch:16},{wch:34},{wch:16},{wch:8},{wch:13},{wch:11},{wch:11},{wch:12},{wch:10},{wch:15},{wch:15},{wch:14},{wch:30},{wch:34}]; ws1['!views']=[{RTL:true}];
-  const ws2=XLSX.utils.aoa_to_sheet(summary); ws2['!cols']=[{wch:22},{wch:12},{wch:12},{wch:18},{wch:16},{wch:18}]; ws2['!views']=[{RTL:true}];
+  const ws1=XLSX.utils.aoa_to_sheet(detail); ws1['!cols']=fin?[{wch:16},{wch:34},{wch:16},{wch:8},{wch:13},{wch:11},{wch:11},{wch:12},{wch:10},{wch:15},{wch:15},{wch:14},{wch:30},{wch:34}]:[{wch:16},{wch:34},{wch:16},{wch:8},{wch:13},{wch:11},{wch:11},{wch:12},{wch:30},{wch:34}]; ws1['!views']=[{RTL:true}];
+  const ws2=XLSX.utils.aoa_to_sheet(summary); ws2['!cols']=fin?[{wch:22},{wch:12},{wch:12},{wch:18},{wch:16},{wch:18}]:[{wch:22},{wch:12},{wch:12}]; ws2['!views']=[{RTL:true}];
   XLSX.utils.book_append_sheet(wb,ws1,'تفاصيل الفروقات');
   XLSX.utils.book_append_sheet(wb,ws2,'ملخص حسب الفئة');
   const nm=(repSess&&repSess.name?String(repSess.name):'الجرد').replace(/[\\\/:*?\[\]]/g,'_').slice(0,60);
@@ -3877,6 +3904,7 @@ function buildPrintReport(reasonKey){
   const R=PRINT_REASONS[reasonKey]||PRINT_REASONS.detailed;
   let rows=filteredReportRows(); if(R.varianceOnly)rows=rows.filter(r=>r.isCounted&&Number(r.diff||0)!==0); else if(R.countedOnly)rows=rows.filter(r=>r.isCounted); // ملخّص الفروقات = المعدود ذو الفرق الفعلي؛ الاستلام/العهدة = المعدود
   let cols=(reasonKey==='detailed')?docColumns():R.cols.slice(); // المحطّة ٣: المفصّل يحترم أعمدة الإعدادات
+  cols=finFilterCols(cols); // م٦-١: الأعمدة المالية تُحذف من كل المطبوعات لغير حاملي الصلاحية المالية
   if(rows.some(r=>r.notes&&r.notes.length)&&cols.indexOf('notes')<0)cols=cols.concat(['notes']); // ملاحظات العدّ تظهر تلقائيًّا في أي مطبوعة تتضمن صفوفها ملاحظات (طلب العميل)
   const tpl=docTemplate(reasonKey), vctx=docVarCtx(reasonKey,rows); // المحطّة ٤: قالب المستند القابل للتحرير
   const dateStr=officialDate(); // التاريخ المعتمد = بدء العد الفعلي
@@ -3893,11 +3921,11 @@ function buildPrintReport(reasonKey){
   // المحطّة ٤: تمهيد القالب وفقراته المرقّمة (بمتغيّرات مُستبدَلة)
   if(tpl.intro) html+='<div style="font-size:12.5px;line-height:1.9;margin:8px 0;white-space:pre-wrap">'+esc(docSubst(tpl.intro,vctx))+'</div>';
   if(Array.isArray(tpl.clauses)&&tpl.clauses.length) html+='<ol style="font-size:12.5px;line-height:1.9;margin:8px 0;padding-inline-start:22px">'+tpl.clauses.map(c=>'<li>'+esc(docSubst(c,vctx))+'</li>').join('')+'</ol>';
-  if(R.summary){ const s2=summarize(rows); const hasCost=s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—';
+  if(R.summary){ const s2=summarize(rows); const finP=canSeeFinance(); const hasCost=finP&&s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—'; // م٦-١: شرائح القيم للمالية فقط
     const chip=(k,v)=>'<span style="border:1px solid #ccc;border-radius:6px;padding:4px 10px">'+k+': <b>'+v+'</b></span>';
     html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px">'+
       chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.deficit))+chip('زيادة',fmt(s2.upTotal))+chip('خارج الدفتر',fmt(s2.extra))+
-      chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar))+'</div>';
+      (finP?chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar)):'')+'</div>';
   }
   const th=cols.map(c=>'<th style="border:1px solid #999;padding:5px 7px;background:#E8EEF9;color:#142440;'+(PRINT_COLDEF[c].num?'text-align:center':'text-align:right')+'">'+esc(PRINT_COLDEF[c].th)+'</th>').join('');
   const body=rows.map(r=>'<tr>'+cols.map(c=>{const d=PRINT_COLDEF[c];return '<td style="border:1px solid #bbb;padding:4px 7px;'+(d.num?'text-align:center;font-variant-numeric:tabular-nums':'text-align:right')+(d.ltr?';direction:ltr':'')+'">'+d.get(r)+'</td>';}).join('')+'</tr>').join('');
@@ -3942,13 +3970,15 @@ function reasonAvailability(pfx){ const approved=!!(repSess&&repSess.status==='a
   set($(pfx==='pr'?'prHandover':'xHandover'),ho,'يتاح بعد تسجيل المسؤولَين السابق/الجديد'); }
 function openPrintDialog(){
   if(!can('report.export'))return;
+  if(!printReasonsAllowed().length)return; // م٦-٢: بلا أي سبب مسموح لا تُفتح النافذة أصلًا
   const mo=$('printReasonModal'); if(!mo)return;
   mo.querySelectorAll('[data-reason]').forEach(b=>b.onclick=()=>doPrint(b.getAttribute('data-reason')));
   reasonAvailability('pr'); // إظهار/إخفاء المحاضر المشروطة (ملخّص الفروقات بعد الاعتماد، الاستلام عند وجود مُسلِّم/مُستلِم)
+  mo.querySelectorAll('[data-reason]').forEach(b=>{ if(!reasonAllowed(b.getAttribute('data-reason')))b.style.display='none'; }); // م٦-٢: تظهر الأسباب المسموحة لهذا المستخدم فقط
   if($('printReasonCancel'))$('printReasonCancel').onclick=()=>{mo.style.display='none';};
   mo.style.display='flex';
 }
-function doPrint(reasonKey){ buildPrintReport(reasonKey); const mo=$('printReasonModal'); if(mo)mo.style.display='none'; setTimeout(()=>window.print(),80); }
+function doPrint(reasonKey){ if(!reasonAllowed(reasonKey))return; buildPrintReport(reasonKey); const mo=$('printReasonModal'); if(mo)mo.style.display='none'; setTimeout(()=>window.print(),80); }
 
 // ===== تصدير Excel حسب السبب (أنماط جاهزة؛ التخصيص وإضافة الأسباب لاحقاً في الإعدادات) =====
 const COL_HEAD={barcode:'الباركود',code:'الكود',name:'اسم الصنف',category:'الفئة',book:'الرصيد الدفتري',counted:'المعدود',diff:'الفرق',status:'الحالة',cost:'التكلفة',bookVal:'القيمة الدفترية',countedVal:'القيمة الفعلية',varVal:'قيمة الفرق'};
@@ -3980,6 +4010,7 @@ function excelSheetFromCols(rows,cols){
 }
 async function exportVarianceExcelReason(reasonKey){
   if(!can('report.export'))return;
+  if(!reasonAllowed(reasonKey))return; // م٦-٢: حارس مزدوج — السبب غير المسموح لا يُصدَّر ولو استُدعي مباشرة
   try{ await loadXLSX(); }catch(e){ toastErr('تعذّر إنشاء Excel (لا اتصال بالمكتبة).');return; }
   const R=EXPORT_REASONS[reasonKey]; if(!R)return;
   const mo=$('exportReasonModal'); if(mo)mo.style.display='none';
@@ -3993,7 +4024,7 @@ async function exportVarianceExcelReason(reasonKey){
     counted.forEach(r=>aoa.push([r.code||'', r.barcode||'', r.name||'', r.unit||'', r.counted]));
     ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:16},{wch:16},{wch:34},{wch:10},{wch:14}];
   }else{
-    ws=XLSX.utils.aoa_to_sheet(excelSheetFromCols(rows,R.cols));
+    ws=XLSX.utils.aoa_to_sheet(excelSheetFromCols(rows,finFilterCols(R.cols))); // م٦-١: الأعمدة المالية تُحذف لغير حاملي الصلاحية
   }
   ws['!views']=[{RTL:true}];
   XLSX.utils.book_append_sheet(wb,ws,(R.label||'الجرد').replace(/[\\\/:*?\[\]]/g,'_').slice(0,28));
@@ -4002,9 +4033,11 @@ async function exportVarianceExcelReason(reasonKey){
 }
 function openExportDialog(){
   if(!can('report.export'))return;
+  if(!exportReasonsAllowed().length)return; // م٦-٢: بلا أي سبب مسموح لا تُفتح النافذة أصلًا
   const mo=$('exportReasonModal'); if(!mo)return;
   mo.querySelectorAll('[data-xreason]').forEach(b=>b.onclick=()=>exportVarianceExcelReason(b.getAttribute('data-xreason')));
   reasonAvailability('x'); // إظهار/إخفاء المحاضر المشروطة
+  mo.querySelectorAll('[data-xreason]').forEach(b=>{ if(!reasonAllowed(b.getAttribute('data-xreason')))b.style.display='none'; }); // م٦-٢: تظهر الأسباب المسموحة لهذا المستخدم فقط
   if($('exportReasonCancel'))$('exportReasonCancel').onclick=()=>{mo.style.display='none';};
   mo.style.display='flex';
 }
@@ -4130,7 +4163,7 @@ function repxModel(name){
   return null;
 }
 // ---- بيانات جدولية موحّدة (يشترك فيها التصدير CSV والطباعة) — نطاقٌ كامل بلا حدّ العرض ----
-function repxTableData(name){ name=name||repxActive;
+function repxTableDataRaw(name){ name=name||repxActive;
   if(name==='executive'){ const m=repxModel('executive'); return {head:['الفئة','عدد الأصناف','القيمة','٪ من الكل'], rows:m.cats.map(g=>[g.cat,g.items,g.value,g.pct])}; }
   if(name==='abc'){ const m=repxModel('abc'); return {head:['الكود','الصنف','الفئة','القيمة','٪ تراكمي','التصنيف'], rows:m.rows.map(r=>[r.code,r.name,r.category,r.value,r.cum,r.cls])}; }
   if(name==='aging'){ const m=repxModel('aging'); return {head:['الشريحة (يوم)','عدد الأصناف','القيمة'], rows:m.buckets.map(b=>[b.k,b.items,b.value])}; }
@@ -4139,6 +4172,12 @@ function repxTableData(name){ name=name||repxActive;
   if(name==='audit'){ return {head:['النوع','الفاعل','الوقت','الصنف','الكمية'], rows:(repxAuditRows||[]).map(a=>[repxActLabel(a.type),a.byName||'',repxActTimeStr(a),a.name||'',(a.qty==null?'':a.qty)])}; }
   return {head:['—'],rows:[]};
 }
+// م٦-١: فهارس الأعمدة المالية لكل تقرير — تُحذف من العرض والتصدير (CSV/Excel/طباعة) لغير حاملي الصلاحية المالية
+const REPX_FIN_IDX={executive:[2,3],abc:[3,4],aging:[2],sessions:[5],suppliers:[2,3]};
+function repxTableData(name){ name=name||repxActive; const d=repxTableDataRaw(name); const idx=REPX_FIN_IDX[name];
+  if(!idx||canSeeFinance())return d;
+  const drop={}; idx.forEach(i=>drop[i]=1);
+  return {head:d.head.filter((_,i)=>!drop[i]), rows:d.rows.map(r=>r.filter((_,i)=>!drop[i]))}; }
 function repxCsvEsc(v){ v=(v==null?'':String(v));
   if(/^[=+@\t]/.test(v) || (/^-/.test(v) && !/^-?\d*\.?\d+$/.test(v))) v="'"+v; // إصلاح-٥ (بند ١٠): تحييد حقن الصيغ (تصيّد Excel) بفاصلة عليا — دون المساس بالأرقام السالبة
   return /[",\n\r]/.test(v)?('"'+v.replace(/"/g,'""')+'"'):v; }
@@ -4202,11 +4241,12 @@ function renderRepxLockedSuppliers(b){ b.innerHTML='<div class="card"><div style
     '<p class="muted" style="margin-top:12px">هذه الميزة <b>مُعطَّلة بقرار الشركة</b>. يمكن لمن يملك «إدارة الصلاحيات» تفعيلها من «الصلاحيات ← ميزات اختيارية».</p></div>';
   $('repxBackCat').onclick=()=>{ repxActive='catalog'; repxRender(); }; }
 function repxIndicators(name,m){
-  if(name==='executive'){ const pct=m.items?round2(m.counted/m.items*100):0; return repxTile('أصناف مشمولة',m.items,fmt(m.items))+repxTile('قيمة المخزون',m.value,fmt(m.value))+repxTile('٪ المعدود من الكل',pct,fmt(pct)+'%'); }
-  if(name==='abc') return repxTile('أصناف',m.items,fmt(m.items))+repxTile('قيمة المخزون',m.value,fmt(m.value))+repxTile('فئة A',m.A,fmt(m.A))+repxTile('فئة B',m.B,fmt(m.B))+repxTile('فئة C',m.C,fmt(m.C));
+  const fin=canSeeFinance(); // م٦-١: بلاطة «قيمة المخزون» لحاملي الصلاحية المالية فقط
+  if(name==='executive'){ const pct=m.items?round2(m.counted/m.items*100):0; return repxTile('أصناف مشمولة',m.items,fmt(m.items))+(fin?repxTile('قيمة المخزون',m.value,fmt(m.value)):'')+repxTile('٪ المعدود من الكل',pct,fmt(pct)+'%'); }
+  if(name==='abc') return repxTile('أصناف',m.items,fmt(m.items))+(fin?repxTile('قيمة المخزون',m.value,fmt(m.value)):'')+repxTile('فئة A',m.A,fmt(m.A))+repxTile('فئة B',m.B,fmt(m.B))+repxTile('فئة C',m.C,fmt(m.C));
   if(name==='aging') return repxTile('أصناف',m.total,fmt(m.total))+m.buckets.map(bk=>repxTile(bk.k+' يوم',bk.items,fmt(bk.items))).join('');
   if(name==='sessions') return repxTile('عدد الجلسات',m.count,fmt(m.count))+repxTile('إجمالي الأصناف',m.items,fmt(m.items));
-  if(name==='suppliers') return repxTile('أصناف',m.items,fmt(m.items))+repxTile('قيمة المخزون',m.value,fmt(m.value))+repxTile('عدد الموردين',m.suppliers.length,fmt(m.suppliers.length));
+  if(name==='suppliers') return repxTile('أصناف',m.items,fmt(m.items))+(fin?repxTile('قيمة المخزون',m.value,fmt(m.value)):'')+repxTile('عدد الموردين',m.suppliers.length,fmt(m.suppliers.length));
   return '';
 }
 function renderRepxReport(b){
@@ -4249,39 +4289,45 @@ function repxRenderExec(){ const cont=$('repxContent'); if(!cont)return;
   if($('repxNote'))$('repxNote').textContent='اضغط فئة لعرض أصنافها.';
 }
 function repxExecCatsTable(m){
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الفئة</th><th class="num">عدد الأصناف</th><th class="num">القيمة</th><th class="num">٪ من الكل</th></tr></thead><tbody>';
-  const body=m.cats.map(g=>'<tr class="clk" data-repxcat="'+esc(g.cat)+'" style="cursor:pointer"><td>'+esc(g.cat)+'</td><td class="num">'+fmt(g.items)+'</td><td class="num" data-v="'+g.value+'">'+fmt(g.value)+'</td><td class="num">'+fmt(g.pct)+'%</td></tr>').join('')||'<tr><td colspan="4" class="muted" style="padding:12px">لا بيانات ضمن النطاق الحالي.</td></tr>';
+  const fin=canSeeFinance(); // م٦-١: عمودا القيمة و٪ من الكل ماليان
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الفئة</th><th class="num">عدد الأصناف</th>'+(fin?'<th class="num">القيمة</th><th class="num">٪ من الكل</th>':'')+'</tr></thead><tbody>';
+  const body=m.cats.map(g=>'<tr class="clk" data-repxcat="'+esc(g.cat)+'" style="cursor:pointer"><td>'+esc(g.cat)+'</td><td class="num">'+fmt(g.items)+'</td>'+(fin?'<td class="num" data-v="'+g.value+'">'+fmt(g.value)+'</td><td class="num">'+fmt(g.pct)+'%</td>':'')+'</tr>').join('')||'<tr><td colspan="'+(fin?4:2)+'" class="muted" style="padding:12px">لا بيانات ضمن النطاق الحالي.</td></tr>';
   return head+body+'</tbody></table></div>';
 }
 function repxExecItemsTable(cat){
+  const fin=canSeeFinance(); // م٦-١: عمود «المعدود» يبقى للجميع — «القيمة» للمالية فقط
   const items=repxScopedRows().filter(r=>(r.category||'(بلا فئة)')===cat).map(r=>({code:r.code,name:r.name,counted:r.isCounted?r.counted:null,value:repxInvVal(r)})).sort((a,b)=>b.value-a.value);
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الكود</th><th style="text-align:right">الصنف</th><th class="num">المعدود</th><th class="num">القيمة</th></tr></thead><tbody>';
-  const body=items.slice(0,REPX_CAP).map(r=>'<tr class="clk" data-repxitem="'+esc(r.code)+'" style="cursor:pointer"><td class="num" style="direction:ltr;text-align:right"><span class="tag">'+esc(r.code)+'</span></td><td>'+esc(r.name)+'</td><td class="num">'+(r.counted!=null?fmt(r.counted):'—')+'</td><td class="num" data-v="'+r.value+'">'+fmt(r.value)+'</td></tr>').join('')||'<tr><td colspan="4" class="muted" style="padding:12px">لا أصناف.</td></tr>';
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الكود</th><th style="text-align:right">الصنف</th><th class="num">المعدود</th>'+(fin?'<th class="num">القيمة</th>':'')+'</tr></thead><tbody>';
+  const body=items.slice(0,REPX_CAP).map(r=>'<tr class="clk" data-repxitem="'+esc(r.code)+'" style="cursor:pointer"><td class="num" style="direction:ltr;text-align:right"><span class="tag">'+esc(r.code)+'</span></td><td>'+esc(r.name)+'</td><td class="num">'+(r.counted!=null?fmt(r.counted):'—')+'</td>'+(fin?'<td class="num" data-v="'+r.value+'">'+fmt(r.value)+'</td>':'')+'</tr>').join('')||'<tr><td colspan="'+(fin?4:3)+'" class="muted" style="padding:12px">لا أصناف.</td></tr>';
   return {html:head+body+'</tbody></table></div>', n:items.length};
 }
 function repxItemCard(code){ const r=repxScopedRows().find(x=>String(x.code)===String(code)); if(!r)return '<p class="muted">الصنف غير موجود ضمن النطاق.</p>';
   const kv=(k,v)=>'<div class="tile"><div class="k">'+esc(k)+'</div><div class="v" style="font-size:15px">'+v+'</div></div>';
-  return '<div class="tiles">'+kv('الكود',esc(r.code))+kv('الصنف',esc(r.name))+kv('الفئة',esc(r.category||'—'))+kv('الدفتري',r.book!=null?fmt(r.book):'—')+kv('المعدود',r.isCounted?fmt(r.counted):'—')+kv('التكلفة',r.cost!=null?fmt(r.cost):'—')+kv('القيمة',fmt(repxInvVal(r)))+kv('الجلسة',esc(r.sname))+'</div>';
+  const fin=canSeeFinance(); // م٦-١: بطاقة الصنف تُظهر الكميات (الدفتري/المعدود) للجميع — التكلفة والقيمة للمالية فقط (طلب العميل: رؤية كم انجرد للصنف)
+  return '<div class="tiles">'+kv('الكود',esc(r.code))+kv('الصنف',esc(r.name))+kv('الفئة',esc(r.category||'—'))+kv('الدفتري',r.book!=null?fmt(r.book):'—')+kv('المعدود',r.isCounted?fmt(r.counted):'—')+(fin?kv('التكلفة',r.cost!=null?fmt(r.cost):'—')+kv('القيمة',fmt(repxInvVal(r))):'')+kv('الجلسة',esc(r.sname))+'</div>';
 }
 function repxAbcTable(m){
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الكود</th><th style="text-align:right">الصنف</th><th class="num">القيمة</th><th class="num">٪ تراكمي</th><th>التصنيف</th></tr></thead><tbody>';
-  const body=m.rows.slice(0,REPX_CAP).map(r=>'<tr><td class="num" style="direction:ltr;text-align:right"><span class="tag">'+esc(r.code)+'</span></td><td>'+esc(r.name)+'</td><td class="num" data-v="'+r.value+'">'+fmt(r.value)+'</td><td class="num">'+fmt(r.cum)+'%</td><td><span class="tag">'+r.cls+'</span></td></tr>').join('')||'<tr><td colspan="5" class="muted" style="padding:12px">لا بيانات.</td></tr>';
+  const fin=canSeeFinance(); // م٦-١: القيمة و٪ التراكمي ماليان — التصنيف A/B/C يبقى
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الكود</th><th style="text-align:right">الصنف</th>'+(fin?'<th class="num">القيمة</th><th class="num">٪ تراكمي</th>':'')+'<th>التصنيف</th></tr></thead><tbody>';
+  const body=m.rows.slice(0,REPX_CAP).map(r=>'<tr><td class="num" style="direction:ltr;text-align:right"><span class="tag">'+esc(r.code)+'</span></td><td>'+esc(r.name)+'</td>'+(fin?'<td class="num" data-v="'+r.value+'">'+fmt(r.value)+'</td><td class="num">'+fmt(r.cum)+'%</td>':'')+'<td><span class="tag">'+r.cls+'</span></td></tr>').join('')||'<tr><td colspan="'+(fin?5:3)+'" class="muted" style="padding:12px">لا بيانات.</td></tr>';
   return head+body+'</tbody></table></div>';
 }
 function repxAgingTable(m){
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الشريحة (يوم)</th><th class="num">عدد الأصناف</th><th class="num">القيمة</th></tr></thead><tbody>';
-  const body=m.buckets.map(bk=>'<tr><td>'+esc(bk.k)+'</td><td class="num" data-v="'+bk.items+'">'+fmt(bk.items)+'</td><td class="num">'+fmt(bk.value)+'</td></tr>').join('');
-  const foot='<tfoot><tr><td>الإجمالي</td><td class="num" data-v="'+m.total+'">'+fmt(m.total)+'</td><td></td></tr></tfoot>';
+  const fin=canSeeFinance(); // م٦-١: عمود «القيمة» للمالية فقط — الأعداد للجميع
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الشريحة (يوم)</th><th class="num">عدد الأصناف</th>'+(fin?'<th class="num">القيمة</th>':'')+'</tr></thead><tbody>';
+  const body=m.buckets.map(bk=>'<tr><td>'+esc(bk.k)+'</td><td class="num" data-v="'+bk.items+'">'+fmt(bk.items)+'</td>'+(fin?'<td class="num">'+fmt(bk.value)+'</td>':'')+'</tr>').join('');
+  const foot='<tfoot><tr><td>الإجمالي</td><td class="num" data-v="'+m.total+'">'+fmt(m.total)+'</td>'+(fin?'<td></td>':'')+'</tr></tfoot>';
   return head+body+'</tbody>'+foot+'</table></div>';
 }
 function repxSessionsTable(m){
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الجلسة</th><th style="text-align:right">الفرع</th><th style="text-align:right">الحالة</th><th class="num">الأصناف</th><th class="num">٪ المعدود</th><th class="num">صافي الفروقات</th></tr></thead><tbody>';
-  const body=m.rows.map(s=>'<tr data-repxsess="'+esc(s.id)+'"><td>'+esc(s.name)+'</td><td class="muted">'+esc(s.location||'—')+'</td><td>'+esc(s.statusLabel)+'</td><td class="num">'+fmt(s.itemCount)+'</td><td class="num">'+fmt(s.countedPct)+'%</td><td class="num">'+fmt(round2(s.netVar))+'</td></tr>').join('')||'<tr><td colspan="6" class="muted" style="padding:12px">لا جلسات ضمن النطاق.</td></tr>';
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">الجلسة</th><th style="text-align:right">الفرع</th><th style="text-align:right">الحالة</th><th class="num">الأصناف</th><th class="num">٪ المعدود</th>'+(canSeeFinance()?'<th class="num">صافي الفروقات</th>':'')+'</tr></thead><tbody>'; // م٦-١
+  const body=m.rows.map(s=>'<tr data-repxsess="'+esc(s.id)+'"><td>'+esc(s.name)+'</td><td class="muted">'+esc(s.location||'—')+'</td><td>'+esc(s.statusLabel)+'</td><td class="num">'+fmt(s.itemCount)+'</td><td class="num">'+fmt(s.countedPct)+'%</td>'+(canSeeFinance()?'<td class="num">'+fmt(round2(s.netVar))+'</td>':'')+'</tr>').join('')||'<tr><td colspan="'+(canSeeFinance()?6:5)+'" class="muted" style="padding:12px">لا جلسات ضمن النطاق.</td></tr>';
   return head+body+'</tbody></table></div>';
 }
 function repxSuppliersTable(m){
-  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">المورّد</th><th class="num">عدد الأصناف</th><th class="num">القيمة</th><th class="num">صافي الفروقات</th></tr></thead><tbody>';
-  const body=m.suppliers.map(g=>'<tr><td>'+esc(g.supplier)+'</td><td class="num">'+fmt(g.items)+'</td><td class="num" data-v="'+g.value+'">'+fmt(g.value)+'</td><td class="num">'+fmt(g.netVar)+'</td></tr>').join('')||'<tr><td colspan="4" class="muted" style="padding:12px">لا بيانات موردين.</td></tr>';
+  const fin=canSeeFinance(); // م٦-١: القيمة وصافي الفروقات ماليان
+  const head='<div class="rtable-wrap"><table><thead><tr><th style="text-align:right">المورّد</th><th class="num">عدد الأصناف</th>'+(fin?'<th class="num">القيمة</th><th class="num">صافي الفروقات</th>':'')+'</tr></thead><tbody>';
+  const body=m.suppliers.map(g=>'<tr><td>'+esc(g.supplier)+'</td><td class="num">'+fmt(g.items)+'</td>'+(fin?'<td class="num" data-v="'+g.value+'">'+fmt(g.value)+'</td><td class="num">'+fmt(g.netVar)+'</td>':'')+'</tr>').join('')||'<tr><td colspan="'+(fin?4:2)+'" class="muted" style="padding:12px">لا بيانات موردين.</td></tr>';
   return head+body+'</tbody></table></div>';
 }
 function repxRenderAudit(){
