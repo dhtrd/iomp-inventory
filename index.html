@@ -669,6 +669,52 @@ select:not(.selx-native){width:100%}
 @media(max-width:820px){
   .topbar .topsearch{width:40px;min-width:40px;height:40px;padding:0;justify-content:center;gap:0;border-radius:10px;font-size:17px}
 }
+/* ═══ التوحيد النهائي: الحقل الموحّد .inp — هوية واحدة لكل الحقول المبنية داخل JS (بديل ٢٧ نمطًا سطريًّا متفرّقًا) ═══ */
+.inp{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--tprimary);font-family:inherit;font-size:14px;transition:border-color var(--tr),box-shadow var(--tr),background var(--tr)}
+.inp.sm{padding:6px 9px;font-size:13px;border-radius:8px}
+.inp:hover:not(:focus):not(:disabled){border-color:color-mix(in srgb,var(--navy700) 30%,var(--border))}
+.inp:focus{outline:none;border-color:var(--navy700);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 16%,transparent)}
+.inp::placeholder{color:var(--tmuted)}
+.inp:disabled{opacity:.55;cursor:not-allowed}
+textarea.inp{resize:vertical;line-height:1.7}
+/* حلقة تركيز موحّدة احتياطية لأي حقل نصي — حتى ذي الأنماط السطرية (:focus لا تغطيه الأنماط السطرية) */
+input:not([type="checkbox"]):not([type="radio"]):not(.rcap):not(.rtask):focus,textarea:focus{outline:none;border-color:var(--navy700)!important;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 16%,transparent)}
+/* لمسات الجوال: ١٦px يمنع قفزة تكبير iOS عند التركيز، بلا وميض لمس، ولا تسرّب تمرير خلف الأدراج */
+@media(pointer:coarse){.inp{font-size:16px}.inp.sm{font-size:15px}}
+*{-webkit-tap-highlight-color:transparent}
+#notifDrawer .npanel,#notifDrawer #notifList,.udrawer,.ck{overscroll-behavior:contain}
+/* حقل كمية العد: بلا أسهم أرقام افتراضية — أنظف وأوسع للمس */
+.padd::-webkit-inner-spin-button,.padd::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.padd{-moz-appearance:textfield;appearance:textfield}
+/* حالة فارغة موحّدة (قائمة العد وسجل الحركة) */
+.empty-hint{text-align:center;color:var(--tsec);padding:22px 14px;border:1px dashed var(--border);border-radius:12px;font-size:13.5px;background:color-mix(in srgb,var(--navy100) 30%,transparent);margin:8px 0}
+/* ═══ القائمة المنسدلة العصرية msel (طلب العميل): لوحة خيارات مخصصة فوق كل select أصيلة — الأصيلة تبقى مصدر الحقيقة (لا مساس بالمنطق) ═══ */
+.msel{position:relative;display:inline-flex;width:100%;max-width:100%;vertical-align:middle}
+.rtools .msel,.utoolbar .msel{width:auto}
+.msel-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:40px;padding:9px 13px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--tprimary);font-family:inherit;font-size:13.5px;cursor:pointer;text-align:start;transition:border-color var(--tr),box-shadow var(--tr),background var(--tr)}
+.rtools .msel-btn,.utoolbar .msel-btn{min-width:130px}
+.field .msel-btn{padding:11px 13px;font-size:14.5px;border-radius:var(--radius)}
+.msel-btn:hover{border-color:color-mix(in srgb,var(--navy700) 35%,var(--border))}
+.msel-btn:focus-visible{outline:none;border-color:var(--navy700);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 16%,transparent)}
+.msel.open .msel-btn{border-color:var(--navy700);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 14%,transparent)}
+.msel-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msel-chev{flex:none;color:var(--tmuted);transition:transform .22s var(--ease),color var(--tr)}
+.msel.open .msel-chev{transform:rotate(180deg);color:var(--navy700)}
+@keyframes mselIn{from{opacity:0;transform:translateY(-4px) scale(.985)}}
+.msel-pop{position:absolute;top:calc(100% + 6px);inset-inline-start:0;min-width:max(100%,220px);max-width:min(360px,88vw);background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--e3);padding:6px;z-index:95;max-height:min(300px,46vh);overflow:auto;overscroll-behavior:contain;transform-origin:top;animation:mselIn .16s var(--ease)}
+.msel.up .msel-pop{top:auto;bottom:calc(100% + 6px);transform-origin:bottom}
+.msel-opt{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;font-size:13.5px;color:var(--tprimary);cursor:pointer;user-select:none;transition:background .1s linear}
+.msel-opt+.msel-opt{margin-top:1px}
+.msel-opt:hover,.msel-opt.act{background:color-mix(in srgb,var(--navy700) 9%,transparent)}
+.msel-opt.sel{color:var(--navy700);font-weight:700;background:color-mix(in srgb,var(--navy700) 7%,transparent)}
+.msel-opt.sel::after{content:"";margin-inline-start:auto;width:5px;height:10px;border:solid currentColor;border-width:0 2.2px 2.2px 0;transform:rotate(45deg)}
+.msel-opt.dis{opacity:.5;cursor:not-allowed}
+.msel-srch{position:sticky;top:-6px;margin:-6px -6px 6px;padding:8px;background:var(--card);border-bottom:1px solid var(--hair);z-index:1}
+.msel-srch input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--page);color:var(--tprimary);font-family:inherit;font-size:13px;outline:none}
+.msel-srch input:focus{border-color:var(--navy700);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy700) 13%,transparent)}
+.msel-empty{padding:12px;text-align:center;color:var(--tsec);font-size:12.5px}
+.msel-native{position:absolute!important;inset-inline-start:0;top:0;visibility:hidden!important;pointer-events:none!important}
+@media(pointer:coarse){.msel-btn{min-height:44px}.msel-opt{padding:12px;font-size:15px}}
 /* أزرار الإغلاق المرسومة بإطار وحركة (طلب العميل): الإشعارات + البحث الشامل + درج المستخدم — دوران ٩٠° واحمرار عند التحويم وارتداد عند الضغط */
 #notifDrawer .nhead .iconbtn,.udrawer-head .iconbtn,.ck-in .ckclose{width:36px;height:36px;min-width:36px;padding:0;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--tsec);cursor:pointer;display:grid;place-items:center;transition:border-color var(--tr),color var(--tr),transform .3s var(--ease),box-shadow var(--tr)}
 #notifDrawer .nhead .iconbtn:hover,.udrawer-head .iconbtn:hover,.ck-in .ckclose:hover{border-color:color-mix(in srgb,var(--danger) 50%,var(--border));color:var(--danger);transform:rotate(90deg);box-shadow:var(--e1)}
@@ -1631,10 +1677,10 @@ function renderPermsPanel(c){
   c.innerHTML=
     '<div class="card"><h2>الأدوار</h2><p class="muted">الأدوار المدمجة ثابتة. أضِف أدواراً مخصّصة حسب حاجتك — تبدأ بلا صلاحيات حتى تفعّلها في مصفوفة الصلاحيات أدناه، وتظهر خياراً عند إضافة المستخدمين.</p>'+
     '<div style="margin-bottom:8px">'+rolesChips+'</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="newRoleName" placeholder="اسم دور جديد (مثال: مشرف الجرد)" style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit"><button class="btn sm" id="addRoleBtn">إضافة دور</button></div><div class="status" id="roleStatus"></div></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="newRoleName" class="inp" placeholder="اسم دور جديد (مثال: مشرف الجرد)" style="flex:1;min-width:180px"><button class="btn sm" id="addRoleBtn">إضافة دور</button></div><div class="status" id="roleStatus"></div></div>'+
     '<div class="card"><h2>أسماء عرض الأدوار</h2><p class="muted">غيّر الاسم الظاهر لأي دور (يظهر في كل القوائم والجداول والترويسة). لا يؤثّر على الصلاحيات أو القواعد — المفتاح الداخلي يبقى ثابتاً.</p>'+
     '<div class="rtable-wrap"><table><tr><th style="text-align:right;min-width:120px">المفتاح الداخلي</th><th style="text-align:right">الاسم الظاهر</th></tr>'+
-    roles.map(r=>'<tr><td class="muted">'+esc(r)+(isBuiltinRole(r)?'':' <span style="font-size:10px">(مخصّص)</span>')+'</td><td><input class="rlabel" data-role="'+esc(r)+'" value="'+esc(roleLabel(r))+'" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit"></td></tr>').join('')+
+    roles.map(r=>'<tr><td class="muted">'+esc(r)+(isBuiltinRole(r)?'':' <span style="font-size:10px">(مخصّص)</span>')+'</td><td><input class="rlabel inp" data-role="'+esc(r)+'" value="'+esc(roleLabel(r))+'" style="width:100%"></td></tr>').join('')+
     '</table></div><div style="margin-top:12px"><button class="btn" id="saveRoleLabels">حفظ الأسماء الظاهرة</button></div><div class="status" id="roleLabelStatus"></div></div>'+
     '<div class="card"><h2>صلاحيات الأدوار</h2><p class="muted">المالك ('+esc(OWNER_EMAIL)+') يحتفظ بكل الصلاحيات دائماً، و«إدارة الصلاحيات» لدور المدير مقفلة. الفرض على الخادم يأتي في تشديد الأمان (أ‑٥).</p>'+
     '<div class="rtable-wrap"><table>'+head+body+'</table></div>'+
@@ -1666,7 +1712,7 @@ function renderPermsPanel(c){
     '<label style="display:flex;gap:10px;align-items:center;padding:8px 4px"><input type="checkbox" id="featDropboxToggle"'+(featuresDropboxOn()?' checked':'')+' style="width:18px;height:18px;cursor:pointer"> <span>تفعيل النسخ الاحتياطي التلقائي إلى Dropbox 🔒 (ر١١)</span></label>'+
     '<div style="margin-top:10px"><button class="btn" id="saveFeatDropbox">حفظ إعداد الميزة</button></div><div class="status" id="dbxFeatStatus"></div></div>'+
     '<div class="card"><h2>المهام التنظيمية</h2><p class="muted">مهام/مسؤوليات وصفية للتوثيق والمتابعة (لا تقفل أزراراً). أضِفها ثم أسندها للأدوار هنا، أو لأفراد بعينهم من قسم «الأفراد».</p>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><input id="newTaskLabel" placeholder="مهمة تنظيمية (مثال: مسؤول التبريد)" style="flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit"><button class="btn sm" id="addTaskBtn">إضافة مهمة</button></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><input id="newTaskLabel" class="inp" placeholder="مهمة تنظيمية (مثال: مسؤول التبريد)" style="flex:1;min-width:180px"><button class="btn sm" id="addTaskBtn">إضافة مهمة</button></div>'+
     (tasks.length?('<div class="rtable-wrap"><table>'+tHead+tBody+'</table></div><div style="margin-top:12px"><button class="btn" id="saveRoleTasks">حفظ إسناد المهام للأدوار</button></div>'):'<p class="muted">لا مهام تنظيمية بعد.</p>')+
     '<div class="status" id="taskStatus"></div></div>'+
     '<div class="card"><h2>الأفراد — استثناءات ومهام</h2><p class="muted">امنح فرداً صلاحية أو انزعها بصرف النظر عن دوره، وأسند له مهاماً تنظيمية.</p>'+
@@ -1839,7 +1885,7 @@ function renderAdminCenter(c){
     // 1) إعدادات الجرد
     '<div class="card"><h2>إعدادات الجرد</h2><p class="muted">تُحفظ ضمن <code>config/permissions.settings</code>. غيابها/قيمها الافتراضية ⇒ لا تغيّر في سلوك النظام.</p>'+
     chk('acBlindDefault',!!s.blindDefault,'الوضع الأعمى افتراضيًا للجلسات الجديدة (يبدأ مربّع «الوضع الأعمى» مُفعّلاً عند الإنشاء)')+
-    '<div class="field" style="max-width:320px;margin:6px 0"><label>عتبة تنبيه الفروقات ٪</label><input id="acVarThreshold" type="number" inputmode="decimal" min="0" step="0.1" placeholder="مثال: 5 (اتركه فارغًا للتعطيل)" value="'+(s.varianceThreshold?esc(s.varianceThreshold):'')+'" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit"><div class="muted" style="font-size:12px">الجلسات المقفلة/المراجَعة التي تتجاوز نسبة فرقها هذه العتبة تُصدِر إشعار «فروقات» في مركز الإشعارات. صفر/فارغ ⇒ لا تنبيه.</div></div>'+
+    '<div class="field" style="max-width:320px;margin:6px 0"><label>عتبة تنبيه الفروقات ٪</label><input id="acVarThreshold" type="number" inputmode="decimal" min="0" step="0.1" placeholder="مثال: 5 (اتركه فارغًا للتعطيل)" value="'+(s.varianceThreshold?esc(s.varianceThreshold):'')+'" class="inp" style="width:100%"><div class="muted" style="font-size:12px">الجلسات المقفلة/المراجَعة التي تتجاوز نسبة فرقها هذه العتبة تُصدِر إشعار «فروقات» في مركز الإشعارات. صفر/فارغ ⇒ لا تنبيه.</div></div>'+
     chk('acReasonReq',!!s.adjustmentReasonRequired,'إلزام سبب موثّق لكل تسوية (يُطلَب سبب عند تصفير/حذف كمية معدودة)')+
     '<div style="margin-top:10px"><button class="btn" id="acSaveCounting">حفظ إعدادات الجرد</button></div><div class="status" id="acCountStatus"></div></div>'+
     // المحطّة ٢: إعدادات المخرجات المركزية (طباعة/تصدير/تقارير) — أساس قوالب المحطّة ٣
@@ -1876,9 +1922,9 @@ function renderAdminCenter(c){
     '<div class="card"><h2>مُنشئ المستندات الرسمية</h2><p class="muted">حرّر قوالب المحاضر (عنوان/تمهيد/فقرات مرقّمة) بمتغيّرات نائبة تُستبدَل عند الطباعة. قابلة للتوسّع.</p>'+
     '<div class="field"><label>المستند</label><select id="dtReason">'+Object.keys(PRINT_REASONS).map(k=>'<option value="'+k+'"'+(k===_docTplReason?' selected':'')+'>'+esc(PRINT_REASONS[k].label)+'</option>').join('')+'</select></div>'+
     (function(){ const t=docTemplate(_docTplReason); return ''+
-      '<div class="field"><label>عنوان المستند (اختياري — يستبدل الافتراضي)</label><input id="dtTitle" value="'+esc(t.title||'')+'" placeholder="مثال: محضر جرد المخزون — {session}"></div>'+
-      '<div class="field"><label>تمهيد (فقرة افتتاحية)</label><textarea id="dtIntro" style="width:100%;min-height:70px;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:inherit" placeholder="مثال: في يوم {date} اجتمعت لجنة الجرد لجرد {location}…">'+esc(t.intro||'')+'</textarea></div>'+
-      '<div class="field"><label>الفقرات/البنود (سطرٌ لكلّ بند — تُرقَّم آليًّا)</label><textarea id="dtClauses" style="width:100%;min-height:90px;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:inherit" placeholder="بند لكل سطر…">'+esc((t.clauses||[]).join('\n'))+'</textarea></div>'; })()+
+      '<div class="field"><label>عنوان المستند (اختياري — يستبدل الافتراضي)</label><input id="dtTitle" class="inp" style="width:100%" value="'+esc(t.title||'')+'" placeholder="مثال: محضر جرد المخزون — {session}"></div>'+
+      '<div class="field"><label>تمهيد (فقرة افتتاحية)</label><textarea id="dtIntro" class="inp" style="width:100%;min-height:70px" placeholder="مثال: في يوم {date} اجتمعت لجنة الجرد لجرد {location}…">'+esc(t.intro||'')+'</textarea></div>'+
+      '<div class="field"><label>الفقرات/البنود (سطرٌ لكلّ بند — تُرقَّم آليًّا)</label><textarea id="dtClauses" class="inp" style="width:100%;min-height:90px" placeholder="بند لكل سطر…">'+esc((t.clauses||[]).join('\n'))+'</textarea></div>'; })()+
     '<div class="muted" style="font-size:12px">المتغيّرات المتاحة: '+DOC_VARS.map(v=>'<code>'+v.k+'</code>').join(' ')+' — ('+DOC_VARS.map(v=>esc(v.d)).join('، ')+')</div>'+
     '<div style="margin-top:10px"><button class="btn" id="acSaveDocTpl">حفظ القالب</button></div><div class="status" id="dtStatus"></div></div>'+
     // المحطّة ٦: تخصيص النظام (افتراضات بلا كود، أثر فوري)
@@ -1911,7 +1957,7 @@ function renderAdminCenter(c){
     // 3) النسخ الاحتياطي
     '<div class="card"><h2>النسخ الاحتياطي</h2><p class="muted">تصدير/استعادة إعدادات النظام (الإعدادات + الأعلام + الأدوار + المستودعات) كملفّ JSON مع مجموع تحقّقي — على جهة العميل، بلا تكلفة ولا خدمة خارجية.</p>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="acExport">⬇ تصدير نسخة احتياطية (JSON)</button></div>'+
-    '<div class="field" style="margin-top:12px"><label>استعادة من نصّ JSON</label><textarea id="acRestoreJson" placeholder="ألصق محتوى ملف النسخة الاحتياطية هنا…" style="width:100%;min-height:96px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:monospace;direction:ltr"></textarea></div>'+
+    '<div class="field" style="margin-top:12px"><label>استعادة من نصّ JSON</label><textarea id="acRestoreJson" placeholder="ألصق محتوى ملف النسخة الاحتياطية هنا…" class="inp" style="width:100%;min-height:96px;font-family:monospace;direction:ltr"></textarea></div>'+
     '<div style="margin-top:8px"><button class="btn ghost" id="acRestoreBtn">↩ استعادة</button></div><div class="status" id="acBackupStatus"></div></div>'+
     // ر١١: بطاقة النسخ الاحتياطي التلقائي إلى Dropbox — تُعرض فقط حين العلم مفعّل (مطفأ ⇒ لا شيء يُضاف)
     (featuresDropboxOn()?dbxCardHtml():'')+
@@ -2166,6 +2212,8 @@ function enhanceSelect(sel){
   try{
     if(!sel || sel.tagName!=='SELECT' || sel.multiple) return;
     if(sel.__selxOn){ if(sel.__selxSync) sel.__selxSync(); return; }
+    // إن سبقتها طبقة msel العامة فكِّكها أولًا — طبقة واحدة لكل قائمة (selx البحثية لها الأولوية هنا)
+    if(sel._msel){ try{ const mw=sel.closest('.msel'); if(mw){ mw.parentNode.insertBefore(sel,mw); mw.remove(); } sel.classList.remove('msel-native'); sel.removeAttribute('aria-hidden'); sel.tabIndex=0; sel._msel=null; sel._mselSync=null; }catch(e){} }
     sel.__selxOn=true;
     const wrap=document.createElement('div'); wrap.className='selx';
     sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel); sel.classList.add('selx-native');
@@ -2275,8 +2323,8 @@ let _sessSig=[]; // مسودّة موقّعي الجلسة الجاري إنشا
 function sigRoster(){ const d=appSettings().signatoryDefaults; if(Array.isArray(d)&&d.length) return d.map(x=>({title:x.title||x.label||'',name:x.name||''})); return [{title:'رئيس اللجنة',name:''},{title:'عضو اللجنة',name:''},{title:'عضو اللجنة',name:''}]; }
 function sessSigInit(force){ if(force||!Array.isArray(_sessSig)||!_sessSig.length) _sessSig=sigRoster(); }
 function sessSigRowsHtml(){ return _sessSig.map((r,i)=>'<div class="ssig-row" style="display:flex;gap:8px;margin-bottom:6px">'+
-  '<input list="sigRoleList" class="ssig-t" data-i="'+i+'" placeholder="المسمى الوظيفي" value="'+esc(r.title||'')+'" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">'+
-  '<input class="ssig-n" data-i="'+i+'" placeholder="الاسم" value="'+esc(r.name||'')+'" style="flex:1;min-width:0;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">'+
+  '<input list="sigRoleList" class="ssig-t inp" data-i="'+i+'" placeholder="المسمى الوظيفي" value="'+esc(r.title||'')+'" style="flex:1;min-width:0">'+
+  '<input class="ssig-n inp" data-i="'+i+'" placeholder="الاسم" value="'+esc(r.name||'')+'" style="flex:1;min-width:0">'+
   '<button type="button" class="btn ghost sm ssig-x" data-i="'+i+'" title="حذف الموقّع">✕</button></div>').join(''); }
 function sessSigSync(){ const box=$('sessSigRows'); if(!box)return; box.querySelectorAll('.ssig-t').forEach(inp=>{ const i=+inp.getAttribute('data-i'); if(_sessSig[i])_sessSig[i].title=inp.value; }); box.querySelectorAll('.ssig-n').forEach(inp=>{ const i=+inp.getAttribute('data-i'); if(_sessSig[i])_sessSig[i].name=inp.value; }); }
 function sessSigBind(){ const box=$('sessSigRows'); if(!box)return;
@@ -2336,7 +2384,7 @@ function renderSessions(c){
 function renderWarehouses(c){
   const active=activeWarehouses();
   c.innerHTML='<div class="card"><h2>المستودعات والمواقع</h2><p class="muted">أضِف المستودعات هنا لتظهر قائمةً منسدلة عند إنشاء الجلسات (بدل الكتابة الحرّة، فلا تكرار). الحذف ينقلها إلى سلة المهملات ويمكن استرجاعها.</p>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><input id="newWhName" placeholder="اسم المستودع (مثال: المستودع الرئيسي)" style="flex:1;min-width:200px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit"><button class="btn sm" id="addWhBtn">إضافة مستودع</button></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px"><input id="newWhName" placeholder="اسم المستودع (مثال: المستودع الرئيسي)" class="inp" style="flex:1;min-width:200px"><button class="btn sm" id="addWhBtn">إضافة مستودع</button></div>'+
     '<div id="whList">'+(active.length? active.map(w=>'<div class="sess"><div class="info"><div class="nm">'+esc(w.name)+'</div></div><button class="btn ghost sm" data-delwh="'+esc(w.id)+'" style="color:var(--danger)">🗑 حذف</button></div>').join('') : '<p class="muted">لا مستودعات بعد — أضِف أول مستودع.</p>')+'</div>'+
     '<div class="status" id="whStatus"></div></div>';
   $('addWhBtn').onclick=async()=>{ const r=await addWarehouse($('newWhName').value); if(r.err){st('whStatus','err',r.err);} else { $('newWhName').value=''; renderWarehouses(c); } };
@@ -2547,7 +2595,7 @@ function renderCountingShell(){
     (featuresOfflineOn()?'<div id="offlineBar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px"><span id="offlineChip" class="offchip"></span><button class="btn ghost sm" id="offlineSyncNow" style="display:none">🔄 مزامنة الآن</button></div>':'')+
     '<div style="height:8px;background:var(--hair);border-radius:20px;overflow:hidden;margin:12px 0 6px"><i id="cprog" style="display:block;height:100%;background:var(--success);width:0%"></i></div>'+
     '<div class="muted" id="cprogtext">0 / '+fmt(curItems.length)+' معدود</div>'+
-    '<input id="csearch" placeholder="ابحث بالكود أو الاسم…" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px;margin-top:12px;font-size:16px;font-family:inherit">'+
+    '<input id="csearch" class="inp" placeholder="ابحث بالكود أو الاسم…" style="width:100%;margin-top:12px;font-size:16px;padding:12px 14px">'+
     (frozen?'':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"><button class="btn sm" id="camScanBtn">📷 مسح بالكاميرا</button><button class="btn ghost sm" id="scanModeBtn">🔫 وضع الماسح</button><button class="btn ghost sm" id="addItemBtn">➕ صنف يدوي</button><span class="muted" style="font-size:12px">كل مسحة = عدّ ١+ تلقائياً بصوت</span></div>')+
     '<div id="scanStatus" style="display:none;margin-top:10px;padding:10px 14px;border-radius:8px;font-weight:600;font-size:14px"></div></div>'+
     '<div class="card" id="actPanel" style="display:none"><div style="display:flex;align-items:center;gap:8px"><h2 style="margin:0;font-size:16px;flex:1">📋 سجل الحركة</h2><span class="muted" style="font-size:12px">آخر ٤٠ حركة</span></div><div id="actlog" style="margin-top:8px"><p class="muted">جارٍ التحميل…</p></div></div>'+
@@ -2585,14 +2633,14 @@ function renderLateAmend(){ const bx=$('lateAmendBox'); if(!bx)return;
   bx.innerHTML='<p class="muted" style="margin-bottom:8px">أضف مَن نُسي عند فتح الجلسة — يسري فورًا على العدّ وكتل تواقيع المحاضر.</p>'+
     '<div style="font-weight:700;font-size:13px;margin:8px 0 4px">العدّادون المكلَّفون</div><div id="laList"><p class="muted">جارٍ التحميل…</p></div>'+
     '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">المسؤولان — للاستلام (اختياري)</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="laCustPrev" placeholder="المسؤول السابق — المُسلِّم" value="'+esc((curSess.custodyPrev&&curSess.custodyPrev.name)||'')+'" style="flex:1;min-width:170px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input id="laCustNext" placeholder="المسؤول الجديد — المُستلِم" value="'+esc((curSess.custodyNext&&curSess.custodyNext.name)||'')+'" style="flex:1;min-width:170px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="laCustPrev" placeholder="المسؤول السابق — المُسلِّم" value="'+esc((curSess.custodyPrev&&curSess.custodyPrev.name)||'')+'" class="inp" style="flex:1;min-width:170px"><input id="laCustNext" placeholder="المسؤول الجديد — المُستلِم" value="'+esc((curSess.custodyNext&&curSess.custodyNext.name)||'')+'" class="inp" style="flex:1;min-width:170px"></div>'+
     '<div class="muted" style="font-size:12px;margin-top:4px">عند تحديدهما معًا يُتاح «محضر استلام مخزون» ويُضافان للموقّعين.</div>'+
     '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">مسؤول الفرع/المستودع</div>'+
-    '<input id="laResp" placeholder="اسم مسؤول الموقع الحالي (إلزامي إن لم يكن جرد تسليم)" value="'+esc((curSess.responsible&&curSess.responsible.name)||'')+'" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)">'+
+    '<input id="laResp" placeholder="اسم مسؤول الموقع الحالي (إلزامي إن لم يكن جرد تسليم)" value="'+esc((curSess.responsible&&curSess.responsible.name)||'')+'" class="inp" style="width:100%">'+
     '<div style="font-weight:700;font-size:13px;margin:12px 0 4px">الموقّعون (مسمى وظيفي + اسم)</div><div id="laSigs"></div>'+
     '<button type="button" class="btn ghost sm" id="laSigAdd" style="margin-top:6px">+ إضافة موقّع</button>'+
     '<div style="margin-top:10px"><button class="btn" id="laSave">حفظ الإضافات</button></div><div class="status" id="laStatus"></div>';
-  const sigRow=(t,n)=>'<div style="display:flex;gap:8px;margin-bottom:6px"><input class="laT" placeholder="المسمى الوظيفي" value="'+esc(t||'')+'" style="flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input class="laN" placeholder="الاسم" value="'+esc(n||'')+'" style="flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"></div>';
+  const sigRow=(t,n)=>'<div style="display:flex;gap:8px;margin-bottom:6px"><input class="laT inp" placeholder="المسمى الوظيفي" value="'+esc(t||'')+'" style="flex:1"><input class="laN inp" placeholder="الاسم" value="'+esc(n||'')+'" style="flex:1"></div>';
   const sg=$('laSigs'); sg.innerHTML=((curSess.signatories||[]).map(x=>sigRow(x.title,x.name)).join(''))+sigRow('','');
   $('laSigAdd').onclick=()=>{ sg.insertAdjacentHTML('beforeend',sigRow('','')); };
   $('laSave').onclick=doLateAmend;
@@ -2717,8 +2765,8 @@ function renderCountList(){
     if(notes.length){ nbox+='<div class="notewrap">'+notes.map(n=>'<div class="noterow">📝 '+esc(n.text||'')+(n.byName?' <span class="muted">— '+esc(n.byName)+'</span>':'')+(n.pending?' <span class="muted">(بانتظار المزامنة)</span>':'')+((!frozen&&n.by===(myProfile&&myProfile.uid)&&n.id)?' <button class="ndel" data-ndelc="'+esc(codeS)+'" data-ndeli="'+esc(n.id)+'" title="حذف ملاحظتي">×</button>':'')+'</div>').join('')+'</div>'; }
     if(noteOpen){ nbox+='<div class="cnotebox"><textarea class="cnotetxt" data-code="'+esc(codeS)+'" placeholder="اكتب الملاحظة — مثال: ٥ عبوات تالفة / موجود في مستودع آخر…" rows="2">'+esc(_noteDraft[codeS]||'')+'</textarea><button class="btn sm cnotesave" data-code="'+esc(codeS)+'" type="button">💾 حفظ الملاحظة</button></div>'; }
     return '<div class="sess" style="margin-bottom:8px;align-items:flex-start"><div class="info"><div class="nm">'+esc(it.name)+(it.manual?' <span class="tag" style="background:#FEF3C7;color:#92400E">يدوي</span>':'')+(notes.length?' <span class="tag notetag" title="فيه ملاحظات">📝 '+notes.length+'</span>':'')+'</div><div class="muted"><span class="tag">'+esc(it.code)+'</span> '+(it.category?esc(it.category)+' • ':'')+book+(counted?'<b style="color:var(--navy700)">الإجمالي: '+fmt(total)+'</b>':'')+diffChip+'</div></div>'+
-      (frozen?'':'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tsec);white-space:nowrap;cursor:pointer"><input type="checkbox" class="cnotecb" data-code="'+esc(codeS)+'"'+(noteOpen?' checked':'')+'> ملاحظة</label><input class="padd" data-code="'+esc(it.code)+'" type="number" inputmode="decimal" placeholder="أضف" style="width:78px;height:42px;text-align:center;font-size:16px;font-weight:600;border:1px solid var(--border);border-radius:8px;font-family:inherit"><button class="paddbtn btn sm" type="button">+ أضف</button>'+(counted?'<button class="prst btn ghost sm" data-code="'+esc(it.code)+'" title="تصفير الصنف">↺</button>':'')+'</div>')+box+nbox+'</div>';}).join('');
-  $('clist').innerHTML=(list.length?html:'<p class="muted" style="padding:10px">لا أصناف مطابقة.</p>')+(list.length>300?'<p class="muted" style="padding:8px">عرض أول 300 صنف — استخدم البحث ('+fmt(list.length)+' مطابق).</p>':'');
+      (frozen?'':'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tsec);white-space:nowrap;cursor:pointer"><input type="checkbox" class="cnotecb" data-code="'+esc(codeS)+'"'+(noteOpen?' checked':'')+'> ملاحظة</label><input class="padd inp" data-code="'+esc(it.code)+'" type="number" inputmode="decimal" placeholder="أضف" style="width:78px;height:42px;text-align:center;font-size:16px;font-weight:600;padding:0"><button class="paddbtn btn sm" type="button">+ أضف</button>'+(counted?'<button class="prst btn ghost sm" data-code="'+esc(it.code)+'" title="تصفير الصنف">↺</button>':'')+'</div>')+box+nbox+'</div>';}).join('');
+  $('clist').innerHTML=(list.length?html:'<p class="empty-hint">لا أصناف مطابقة.</p>')+(list.length>300?'<p class="muted" style="padding:8px">عرض أول 300 صنف — استخدم البحث ('+fmt(list.length)+' مطابق).</p>':'');
   const addFrom=inp=>{if(!inp)return;const code=inp.getAttribute('data-code');const v=inp.value;inp.value='';addEntry(code,v);};
   $('clist').querySelectorAll('.paddbtn').forEach(b=>b.onclick=()=>addFrom(b.parentElement.querySelector('.padd')));
   $('clist').querySelectorAll('.padd').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addFrom(inp);}}));
@@ -3428,7 +3476,7 @@ function actWhen(a){ if(a&&a.at&&typeof a.at.toDate==='function')return a.at.toD
 function renderActivity(qs){
   if(!$('actlog'))return;
   const rows=[]; qs.forEach(d=>rows.push(d.data()));
-  if(!rows.length){$('actlog').innerHTML='<p class="muted">لا حركات بعد — ستظهر هنا كل إضافة أو حذف مع اسم من قام بها ووقتها.</p>';return;}
+  if(!rows.length){$('actlog').innerHTML='<p class="empty-hint">لا حركات بعد — ستظهر هنا كل إضافة أو حذف مع اسم من قام بها ووقتها.</p>';return;}
   const tmap={add:'➕ إضافة',remove:'➖ حذف كمية',reset:'↺ تصفير صنف',note:'📝 ملاحظة عدّ',close:'🔒 إغلاق للمراجعة',reviewed:'✔ تمت المراجعة',fin_approve:'🖊 اعتماد مالي',approve:'✅ اعتماد وقفل',return:'↩ إرجاع للعدّ',toreview:'↩ إرجاع للمراجعة',reopen:'🔓 فتح استثنائي',sync:'🔄 مزامنة دون اتصال'};
   const tcol={add:'var(--success)',remove:'var(--danger)',reset:'var(--warn)',note:'var(--navy700)',close:'var(--navy500)',reviewed:'var(--navy500)',fin_approve:'var(--navy500)',approve:'var(--success)',return:'var(--warn)',toreview:'var(--warn)',reopen:'var(--danger)',sync:'var(--navy700)'};
   $('actlog').innerHTML='<div style="max-height:300px;overflow:auto">'+rows.map(a=>{
@@ -3621,7 +3669,7 @@ function renderReportSummary(){
     vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
     vtile('إجمالي القيمة الفعلية',money(s.countedVal))+
     tile('صافي قيمة الفروقات',money(s.netVar),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):'');
-  $('repTiles').querySelectorAll('[data-f]').forEach(t=>t.onclick=()=>{ if($('repStatus'))$('repStatus').value=t.getAttribute('data-f'); renderReportRows(); renderReportSummary(); });
+  $('repTiles').querySelectorAll('[data-f]').forEach(t=>t.onclick=()=>{ const rs=$('repStatus'); if(rs){ rs.value=t.getAttribute('data-f'); if(rs._mselSync)rs._mselSync(); } renderReportRows(); renderReportSummary(); });
 }
 // الترشيح المشترك (يستعمله العرض والطباعة) — يُعيد كامل المطابق للمرشّحات الحالية
 function filteredReportRows(){
@@ -4304,7 +4352,7 @@ function ledRenderTree(){ const el=$('ledTree'); if(!el)return; const fold=ledFo
   const eb=(t,a)=>edit?('<button class="btn ghost sm" '+a+' style="padding:2px 8px;font-size:12px">'+t+'</button>'):'';
   let html=''; whs.forEach(w=>{ const code=ledWhCode(w), zones=w.tree||[];
     html+='<details class="ledwh" open style="border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin:6px 0"><summary style="cursor:pointer;font-weight:600;padding:4px 0">🏬 '+esc(w.name)+' <span class="muted" style="font-weight:400;direction:ltr">('+esc(code)+')</span></summary>';
-    if(edit) html+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label class="muted" style="font-size:12px">رمز المستودع (لمعرّفات المواقع):</label><input data-whcode="'+esc(w.id)+'" value="'+esc(code)+'" style="width:90px;direction:ltr;padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit">'+eb('＋ منطقة','data-addzone="'+esc(w.id)+'"')+'</div>';
+    if(edit) html+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><label class="muted" style="font-size:12px">رمز المستودع (لمعرّفات المواقع):</label><input data-whcode="'+esc(w.id)+'" value="'+esc(code)+'" class="inp sm" style="width:90px;direction:ltr">'+eb('＋ منطقة','data-addzone="'+esc(w.id)+'"')+'</div>';
     if(!zones.length) html+='<p class="muted" style="margin:4px 0 8px 16px">لا مناطق مُعرّفة بعد لهذا المستودع.</p>';
     zones.forEach(z=>{ html+='<details open style="margin:2px 16px"><summary style="cursor:pointer;padding:3px 0">🗂 منطقة '+esc(z.name||z.id)+' '+eb('＋ رف','data-addshelf="'+esc(w.id)+'|'+esc(z.id)+'"')+'</summary>';
       (z.shelves||[]).forEach(sh=>{ html+='<details open style="margin:2px 16px"><summary style="cursor:pointer;padding:3px 0">🗄 رف '+esc(sh.name||sh.id)+' '+eb('＋ صندوق','data-addbin="'+esc(w.id)+'|'+esc(z.id)+'|'+esc(sh.id)+'"')+'</summary><div style="margin:2px 16px">';
@@ -4313,7 +4361,7 @@ function ledRenderTree(){ const el=$('ledTree'); if(!el)return; const fold=ledFo
             '<span class="tag" style="direction:ltr">'+esc(loc)+'</span>'+
             '<span style="flex:1;min-width:60px;height:8px;background:var(--navy100);border-radius:99px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.min(100,pct)+'%;background:'+(warn?'var(--danger)':'var(--navy500)')+'"></span></span>'+
             '<span class="muted" style="min-width:120px;text-align:left;font-variant-numeric:tabular-nums">'+fmt(cur)+' / '+fmt(cap)+' • '+fmt(pct)+'%'+(warn?' ⚠️':'')+'</span>'+
-            (edit?('<input data-cap="'+esc(tag)+'" type="number" min="1" value="'+cap+'" title="السعة القصوى" style="width:78px;padding:4px 6px;border:1px solid var(--border);border-radius:8px;font-family:inherit">'+eb('حذف','data-rmbin="'+esc(tag)+'" style="color:var(--danger);padding:2px 8px;font-size:12px"')):'')+'</div>'; });
+            (edit?('<input data-cap="'+esc(tag)+'" type="number" min="1" value="'+cap+'" title="السعة القصوى" class="inp sm" style="width:78px">'+eb('حذف','data-rmbin="'+esc(tag)+'" style="color:var(--danger);padding:2px 8px;font-size:12px"')):'')+'</div>'; });
         html+='</div></details>'; });
       html+='</details>'; });
     html+='</details>'; });
@@ -4668,7 +4716,7 @@ async function renderProductsScreen(c){
     '<button class="btn sm" id="pxNewBtn">＋ منتج جديد</button><button class="btn ghost sm" id="pxRefresh">↻ تحديث</button></div></div>'+
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;align-items:start">'+
     '<div class="card" style="min-width:0"><h2 style="margin:0 0 8px">الكتالوج</h2>'+
-    '<input id="pxSearch" placeholder="بحث بالاسم أو SKU…" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;background:var(--card);color:var(--tprimary);margin-bottom:9px">'+
+    '<input id="pxSearch" placeholder="بحث بالاسم أو SKU…" class="inp" style="width:100%">'+
     '<div id="pxList" style="max-height:520px;overflow:auto"><p class="muted">جارٍ التحميل…</p></div><div class="muted" id="pxDist" style="margin-top:8px;font-size:12px"></div></div>'+
     '<div class="card" id="pxCardBox" style="min-width:0"><p class="muted">اختر منتجًا من الكتالوج أو أنشئ منتجًا جديدًا.</p></div></div></div>';
   if($('pxRefresh'))$('pxRefresh').onclick=()=>renderProductsScreen(c);
@@ -4692,7 +4740,7 @@ function pxRenderCatalog(){ const el=$('pxList'); if(!el)return; const q=arNorm(
 function pxRenderCard(){ const box=$('pxCardBox'); if(!box)return; const p=pxFind(pxCurSku);
   if(!p){ box.innerHTML='<p class="muted">اختر منتجًا من الكتالوج أو أنشئ منتجًا جديدًا.</p>'; return; }
   const cc=pxCardClass(p.sku), showSup=featuresSuppliersOn();
-  const ii=(id,label,val,type)=>'<div class="field"><label>'+esc(label)+'</label><input id="'+id+'" '+(type?'type="'+type+'" ':'')+'value="'+esc(val==null?'':val)+'" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;background:var(--card);color:var(--tprimary)"></div>';
+  const ii=(id,label,val,type)=>'<div class="field"><label>'+esc(label)+'</label><input id="'+id+'" '+(type?'type="'+type+'" ':'')+'value="'+esc(val==null?'':val)+'" class="inp" style="width:100%"></div>';
   box.innerHTML='<div id="pxCard" data-pxcard="'+esc(p.sku)+'">'+
     '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><h2 style="margin:0;flex:1;min-width:0">'+esc(p.name||'—')+'</h2>'+
       '<span id="pxAbcBadge" title="تصنيف ABC (آليّ)" style="'+pxBadgeStyle(cc.abc)+'">'+esc(cc.abc)+'</span><span id="pxXyzBadge" title="تصنيف XYZ (آليّ)" style="'+pxBadgeStyle(cc.xyz)+'">'+esc(cc.xyz)+'</span>'+
@@ -4712,10 +4760,10 @@ function pxRenderCard(){ const box=$('pxCardBox'); if(!box)return; const p=pxFin
       PX_STATUSES.map(s=>'<button class="btn '+(p.status===s?'':'ghost')+' sm" data-pxstatus="'+s+'">'+esc(PX_STATUS_LABEL[s])+'</button>').join('')+'</div>'+
     '<div class="muted" style="font-size:12px;margin-top:4px">الموقوف/المنتهي يُوسَم في الكتالوج ويُستثنى من قائمة الأهلية المرجعية؛ وجلسات الجرد تُبنى من الملف المرفوع أو الإضافة اليدوية (بلا فلترة تلقائية، حرصًا على عدم التداخل مع الرفع). — إصلاح-٥ بند ٩</div>'+
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">'+
-      '<div><h3 style="font-size:14px;margin:0 0 6px">المتغيرات</h3><div style="display:flex;gap:7px"><input id="px_varName" placeholder="اسم المتغير…" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><button class="btn ghost sm" id="pxVarAdd">➕</button></div><div id="pxVarList" style="margin-top:6px"></div></div>'+
-      '<div><h3 style="font-size:14px;margin:0 0 6px">الخصائص</h3><div style="display:flex;gap:7px"><input id="px_attrK" placeholder="الخاصية" style="width:96px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input id="px_attrV" placeholder="القيمة" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><button class="btn ghost sm" id="pxAttrAdd">➕</button></div><div id="pxAttrList" style="margin-top:6px"></div></div>'+
-      '<div><h3 style="font-size:14px;margin:0 0 6px">الصور (روابط)</h3><div style="display:flex;gap:7px"><input id="px_imgUrl" placeholder="https://…" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;direction:ltr;background:var(--card);color:var(--tprimary)"><button class="btn ghost sm" id="pxImgAdd">➕</button></div><div id="pxImgList" style="margin-top:6px"></div></div>'+
-      '<div><h3 style="font-size:14px;margin:0 0 6px">المرفقات (روابط)</h3><div style="display:flex;gap:7px"><input id="px_attName" placeholder="الاسم" style="width:88px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;background:var(--card);color:var(--tprimary)"><input id="px_attUrl" placeholder="https://…" style="flex:1;min-width:0;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;direction:ltr;background:var(--card);color:var(--tprimary)"><button class="btn ghost sm" id="pxAttAdd">➕</button></div><div id="pxAttList" style="margin-top:6px"></div></div>'+
+      '<div><h3 style="font-size:14px;margin:0 0 6px">المتغيرات</h3><div style="display:flex;gap:7px"><input id="px_varName" placeholder="اسم المتغير…" class="inp sm" style="flex:1;min-width:0"><button class="btn ghost sm" id="pxVarAdd">➕</button></div><div id="pxVarList" style="margin-top:6px"></div></div>'+
+      '<div><h3 style="font-size:14px;margin:0 0 6px">الخصائص</h3><div style="display:flex;gap:7px"><input id="px_attrK" placeholder="الخاصية" class="inp sm" style="width:96px"><input id="px_attrV" placeholder="القيمة" class="inp sm" style="flex:1;min-width:0"><button class="btn ghost sm" id="pxAttrAdd">➕</button></div><div id="pxAttrList" style="margin-top:6px"></div></div>'+
+      '<div><h3 style="font-size:14px;margin:0 0 6px">الصور (روابط)</h3><div style="display:flex;gap:7px"><input id="px_imgUrl" placeholder="https://…" class="inp sm" style="flex:1;min-width:0;direction:ltr"><button class="btn ghost sm" id="pxImgAdd">➕</button></div><div id="pxImgList" style="margin-top:6px"></div></div>'+
+      '<div><h3 style="font-size:14px;margin:0 0 6px">المرفقات (روابط)</h3><div style="display:flex;gap:7px"><input id="px_attName" placeholder="الاسم" class="inp sm" style="width:88px"><input id="px_attUrl" placeholder="https://…" class="inp sm" style="flex:1;min-width:0;direction:ltr"><button class="btn ghost sm" id="pxAttAdd">➕</button></div><div id="pxAttList" style="margin-top:6px"></div></div>'+
     '</div>'+
     '<h3 style="font-size:14px;margin:14px 0 6px">تاريخ المنتج (ملحق فقط)</h3><div id="pxHist" style="max-height:200px;overflow:auto"><p class="muted">جارٍ التحميل…</p></div>'+
     '<div class="status" id="pxCardStatus"></div></div>';
@@ -4753,6 +4801,59 @@ async function pxNewCardPrompt(){
   toastOk('أُنشئت بطاقة المنتج ✓'); pxCurSku=r.sku; pxRenderAll();
 }
 
+/* ═══ القائمة المنسدلة العصرية msel (طلب العميل — مركز الإدارة/المستخدمون/تعديل المستخدم/التقارير وكل النظام):
+   طبقة عرض فوق select الأصيلة: زر أنيق بسهم دوّار + لوحة خيارات مخصصة (تحويم/محدَّد ✓/لوحة مفاتيح/بحث للقوائم الطويلة).
+   الأصيلة تبقى في الـDOM مخفيةً كمصدر حقيقة: القيمة تُضبط عليها ويُبثّ change ⇒ كل المعالجات والاختبارات القائمة تعمل كما هي. ═══ */
+const MSEL_CHEV='<svg class="msel-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+function mselSkip(sel){ return !sel || sel._msel || sel.__selxOn || sel.classList.contains('selx-native') || sel.closest('.selx') || sel.multiple || sel.querySelector('optgroup') || sel.closest('#repPrintArea'); }
+function mselClose(wrap){ if(!wrap||!wrap.classList.contains('open'))return; wrap.classList.remove('open','up'); const p=wrap.querySelector('.msel-pop'); if(p)p.hidden=true; const b=wrap.querySelector('.msel-btn'); if(b)b.setAttribute('aria-expanded','false'); if(wrap._doc){ document.removeEventListener('mousedown',wrap._doc,true); wrap._doc=null; } }
+function mselEnhance(sel){
+  if(mselSkip(sel))return; sel._msel=1;
+  const wrap=document.createElement('span'); wrap.className='msel';
+  sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel);
+  const btn=document.createElement('button'); btn.type='button'; btn.className='msel-btn'; btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+  const lab=document.createElement('span'); lab.className='msel-t'; btn.appendChild(lab); btn.insertAdjacentHTML('beforeend',MSEL_CHEV);
+  const pop=document.createElement('div'); pop.className='msel-pop'; pop.hidden=true; pop.setAttribute('role','listbox');
+  wrap.appendChild(btn); wrap.appendChild(pop);
+  sel.classList.add('msel-native'); sel.tabIndex=-1; sel.setAttribute('aria-hidden','true');
+  const syncLabel=()=>{ const o=sel.options[sel.selectedIndex]; lab.textContent=o?o.textContent:''; btn.disabled=!!sel.disabled; btn.style.opacity=sel.disabled?'.55':''; btn.style.cursor=sel.disabled?'not-allowed':''; };
+  const pick=(v)=>{ if(sel.value!==v){ sel.value=v; sel.dispatchEvent(new Event('change',{bubbles:true})); } syncLabel(); mselClose(wrap); btn.focus(); };
+  const build=(q)=>{ pop.querySelectorAll('.msel-opt,.msel-empty').forEach(n=>n.remove());
+    const qq=(q||'').trim().toLowerCase(); let shown=0;
+    Array.from(sel.options).forEach(o=>{ const t=o.textContent||''; if(qq&&t.toLowerCase().indexOf(qq)<0)return; shown++;
+      const d=document.createElement('div'); d.className='msel-opt'+(o.value===sel.value?' sel':'')+(o.disabled?' dis':''); d.setAttribute('role','option'); d.setAttribute('data-v',o.value); d.setAttribute('aria-selected',o.value===sel.value?'true':'false'); d.textContent=t;
+      if(!o.disabled) d.onmousedown=(e)=>{ e.preventDefault(); pick(o.value); };
+      pop.appendChild(d); });
+    if(!shown){ const e=document.createElement('div'); e.className='msel-empty'; e.textContent='لا خيار مطابقًا'; pop.appendChild(e); } };
+  const open=()=>{ if(wrap.classList.contains('open')||sel.disabled)return;
+    document.querySelectorAll('.msel.open').forEach(mselClose);
+    pop.innerHTML=''; let srchIn=null;
+    if(sel.options.length>8){ const s=document.createElement('div'); s.className='msel-srch'; srchIn=document.createElement('input'); srchIn.placeholder='بحث…'; srchIn.setAttribute('aria-label','بحث في الخيارات'); s.appendChild(srchIn); pop.appendChild(s); srchIn.oninput=()=>build(srchIn.value); }
+    build(''); pop.hidden=false; wrap.classList.add('open'); btn.setAttribute('aria-expanded','true');
+    try{ const r=btn.getBoundingClientRect(); const ph=Math.min(300,window.innerHeight*.46); if(window.innerHeight-r.bottom<ph+14 && r.top>ph+14) wrap.classList.add('up'); }catch(e){}
+    const selEl=pop.querySelector('.msel-opt.sel'); if(selEl) selEl.scrollIntoView({block:'nearest'});
+    if(srchIn) setTimeout(()=>{ try{ srchIn.focus(); }catch(e){} },0);
+    wrap._doc=(e)=>{ if(!e.target.closest||e.target.closest('.msel')!==wrap) mselClose(wrap); };
+    document.addEventListener('mousedown',wrap._doc,true); };
+  btn.onclick=()=>{ wrap.classList.contains('open')?mselClose(wrap):open(); };
+  btn.onkeydown=(e)=>{ if(e.key==='ArrowDown'||e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } };
+  pop.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ e.preventDefault(); mselClose(wrap); btn.focus(); } });
+  wrap.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ mselClose(wrap); btn.focus(); return; }
+    if(!wrap.classList.contains('open'))return; const opts=Array.from(pop.querySelectorAll('.msel-opt:not(.dis)')); if(!opts.length)return;
+    let i=opts.findIndex(o=>o.classList.contains('act')); if(i<0)i=opts.findIndex(o=>o.classList.contains('sel'));
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); i=(e.key==='ArrowDown')?Math.min(opts.length-1,i+1):Math.max(0,i-1); opts.forEach(o=>o.classList.remove('act')); opts[i].classList.add('act'); opts[i].scrollIntoView({block:'nearest'}); }
+    else if(e.key==='Enter'&&i>=0){ e.preventDefault(); pick(opts[i].getAttribute('data-v')); } });
+  sel.addEventListener('change',syncLabel); // مزامنة عند التغيير المبثوث
+  sel._mselSync=syncLabel; // وللضبط البرمجي المباشر (بلاطات التقرير ونحوها)
+  syncLabel();
+}
+function mselScan(root){ try{ (root||document).querySelectorAll('select').forEach(mselEnhance); }catch(e){} }
+(function(){ if(window.__mselWired)return; window.__mselWired=1;
+  mselScan(document);
+  let raf=0; const mo=new MutationObserver(()=>{ if(raf)return; raf=requestAnimationFrame(()=>{ raf=0; mselScan(document); }); });
+  try{ mo.observe(document.body,{childList:true,subtree:true}); }catch(e){}
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ const w=document.querySelector('.msel.open'); if(w)mselClose(w); } },true); // Esc يغلق أي لوحة مفتوحة أيًّا كان موضع التركيز
+})();
 </script>
 </body>
 </html>

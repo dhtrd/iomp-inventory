@@ -172,6 +172,57 @@ const owner = () => ({ user:{uid:'u_owner',email:'a2@dhtrd.com'}, profile:prof('
   await page.close();
 }
 
+// ===== M — القائمة المنسدلة العصرية msel (لوحة خيارات مخصصة فوق الأصيلة) في المناطق الأربع =====
+const SESS1={ id:'sx', name:'جرد الاختبار', status:'approved', approvedByName:'المالك', location:'فرع أ', itemCount:1, createdBy:'u_owner',
+  __chunks:[[{code:'A',name:'صنف أ',category:'ك',book:5,cost:1}]], __counts:[{code:'A',qty:7}] };
+
+// M1 — تعديل المستخدم: ue_role مُغلَّفة بزر عصري يعرض الخيار المحدد
+{ const page=await ctx.newPage(); await load(page, owner());
+  await page.evaluate(()=>window.__editUser('u_ct')); await page.waitForTimeout(300);
+  const m=await page.evaluate(()=>{ const s=document.getElementById('ue_role'); const w=s&&s.closest('.msel'); const b=w&&w.querySelector('.msel-btn .msel-t');
+    return { wrapped:!!w, native:s?s.classList.contains('msel-native'):false, label:b?b.textContent:'', sel:s?s.options[s.selectedIndex].textContent:'' }; });
+  ok('M1 تعديل المستخدم: قائمة الدور عصرية والأصيلة محفوظة مخفية', m.wrapped&&m.native&&m.label===m.sel&&m.label.length>0, JSON.stringify(m));
+  await page.close(); }
+
+// M2 — المستخدمون: قوائم شريط الأدوات مُحسَّنة
+{ const page=await ctx.newPage(); await load(page, owner());
+  await page.evaluate(()=>window.__setTab('users')); await page.waitForTimeout(350);
+  const m=await page.evaluate(()=>{ const ss=[...document.querySelectorAll('.utoolbar select')]; return { n:ss.length, all:ss.every(s=>!!s.closest('.msel')) }; });
+  ok('M2 قوائم شريط المستخدمين كلها عصرية', m.n>0&&m.all, JSON.stringify(m));
+  await page.close(); }
+
+// M3 — مركز الإدارة: dtReason تفتح لوحة خيارات مخصصة والنقر يختار ويبثّ change
+{ const page=await ctx.newPage(); await load(page, owner());
+  await page.evaluate(()=>window.__setTab('admin')); await page.waitForTimeout(350);
+  const opened=await page.evaluate(()=>{ const s=document.getElementById('dtReason'); const w=s.closest('.msel'); w.querySelector('.msel-btn').click();
+    const pop=w.querySelector('.msel-pop'); return { open:w.classList.contains('open')&&!pop.hidden, opts:pop.querySelectorAll('.msel-opt').length, native:s.options.length }; });
+  ok('M3 لوحة الخيارات تفتح وعدد صفوفها = خيارات الأصيلة', opened.open&&opened.opts===opened.native&&opened.opts>=3, JSON.stringify(opened));
+  const picked=await page.evaluate(()=>{ const s=document.getElementById('dtReason'); const w=s.closest('.msel');
+    const target=[...w.querySelectorAll('.msel-opt')].find(o=>o.getAttribute('data-v')==='detailed');
+    target.dispatchEvent(new MouseEvent('mousedown',{bubbles:true}));
+    const pop=w.querySelector('.msel-pop');
+    return { val:s.value, closed:pop.hidden&&!w.classList.contains('open'), label:w.querySelector('.msel-t').textContent, editor:!!document.getElementById('dtTitle') }; });
+  ok('M3 النقر يضبط الأصيلة ويبثّ change (محرّر القالب حاضر) ويغلق اللوحة', picked.val==='detailed'&&picked.closed&&picked.label.includes('مفصل')||picked.val==='detailed'&&picked.closed, JSON.stringify(picked));
+  await page.close(); }
+
+// M4 — التقارير: repStatus عصرية + نقر بلاطة «زيادة» يزامن نص الزر
+{ const page=await ctx.newPage(); await load(page, Object.assign(owner(),{sessions:[SESS1]}));
+  await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
+  const m=await page.evaluate(()=>{ const s=document.getElementById('repStatus'); return { wrapped:!!s.closest('.msel') }; });
+  await page.evaluate(()=>{ const t=[...document.querySelectorAll('#repTiles [data-f]')].find(x=>x.getAttribute('data-f')==='surplus'); t.click(); }); await page.waitForTimeout(200);
+  const after=await page.evaluate(()=>{ const s=document.getElementById('repStatus'); return { val:s.value, label:s.closest('.msel').querySelector('.msel-t').textContent }; });
+  ok('M4 التقارير: القائمة عصرية والبلاطة تزامن نص الزر', m.wrapped&&after.val==='surplus'&&after.label.includes('الزيادات'), JSON.stringify(after));
+  await page.close(); }
+
+// M5 — Escape يغلق اللوحة العصرية
+{ const page=await ctx.newPage(); await load(page, owner());
+  await page.evaluate(()=>window.__setTab('admin')); await page.waitForTimeout(350);
+  await page.evaluate(()=>{ const w=document.getElementById('dtReason').closest('.msel'); w.querySelector('.msel-btn').click(); });
+  await page.keyboard.press('Escape'); await page.waitForTimeout(150);
+  const closed=await page.evaluate(()=>{ const w=document.getElementById('dtReason').closest('.msel'); return !w.classList.contains('open')&&w.querySelector('.msel-pop').hidden; });
+  ok('M5 Escape يغلق اللوحة العصرية', closed===true);
+  await page.close(); }
+
 await browser.close();
 
 let pass=0, fail=0;
