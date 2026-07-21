@@ -3639,19 +3639,21 @@ function computeVariance(items,counts){
     const bookValue=(cost!=null&&book!=null)?book*cost:null;
     const countedValue=(cost!=null&&isCounted)?counted*cost:null;
     const isUp=(status==='surplus'||status==='extra'||(book!=null&&book<0)); // «زيادة» بمفهومها الشامل (طلب العميل): زيادة + خارج الدفتر + دفتري سالب
+    const isDown=(status==='deficit'||(status==='uncounted'&&book!=null&&book>0)); // «عجز» بمفهومه الشامل (طلب العميل): عجز + ما لم يُعدّ بعد (سيُعامل صفرًا) — مرآة الزيادات
     return {code:it.code,barcode:it.barcode||'',name:it.name||'',category:(it.category!=null?String(it.category).trim():''),unit:it.unit||'',
-      book,counted,isCounted,cost,diff,hasDiff,status,isUp,varValue,bookValue,countedValue,manual:!!it.manual,
+      book,counted,isCounted,cost,diff,hasDiff,status,isUp,isDown,varValue,bookValue,countedValue,manual:!!it.manual,
       who:isCounted?repAgg(cc.entries):[], entries:isCounted&&cc.entries?cc.entries.length:0};
   });
 }
 // ملخصات إجمالية (صافي الفروقات محسوب على المعدود فقط؛ غير المعدود يُفصح عنه منفصلاً).
 function summarize(rows){
-  const s={total:rows.length,counted:0,uncounted:0,match:0,surplus:0,deficit:0,nobook:0,extra:0,upTotal:0,
+  const s={total:rows.length,counted:0,uncounted:0,match:0,surplus:0,deficit:0,nobook:0,extra:0,upTotal:0,downTotal:0,
     withCost:0,bookVal:0,countedVal:0,netVar:0,surplusVal:0,deficitVal:0,uncountedBookVal:0};
   rows.forEach(r=>{
     if(r.isCounted)s.counted++; else s.uncounted++;
     if(r.status==='match')s.match++; else if(r.status==='surplus')s.surplus++; else if(r.status==='deficit')s.deficit++; else if(r.status==='nobook')s.nobook++; else if(r.status==='extra')s.extra++;
     if(r.isUp||r.status==='surplus'||r.status==='extra'||(r.book!=null&&r.book<0))s.upTotal++; // بلاطة «زيادة» الشاملة (طلب العميل): زيادة + خارج الدفتر + دفتري سالب
+    if(r.isDown||r.status==='deficit'||(r.status==='uncounted'&&r.book!=null&&r.book>0))s.downTotal++; // بلاطة «عجز» الشاملة (طلب العميل): عجز + ما لم يُعدّ بعد — مرآة الزيادات
     if(r.cost!=null)s.withCost++;
     if(r.bookValue!=null)s.bookVal+=r.bookValue;
     if(r.countedValue!=null)s.countedVal+=r.countedValue;
@@ -3720,7 +3722,7 @@ function renderReportShell(){
       '<div class="rtools">'+
         '<input id="repSearch" placeholder="بحث بالكود أو الاسم…">'+
         '<select id="repCat"><option value="">كل الفئات</option>'+cats.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('')+'</select>'+
-        '<select id="repStatus"><option value="all">كل الحالات</option><option value="counted">المعدود فقط</option><option value="var">الفروقات فقط (عجز/زيادة)</option><option value="deficit">عجز</option><option value="surplus">الزيادات (تشمل خارج الدفتر والدفتري السالب)</option><option value="extra">زيادة خارج الدفتر (يدوي)</option><option value="match">مطابق</option><option value="uncounted">غير معدود</option></select>'+
+        '<select id="repStatus"><option value="all">كل الحالات</option><option value="counted">المعدود فقط</option><option value="var">الفروقات فقط (عجز/زيادة)</option><option value="deficit">العجز (يشمل ما لم يُعدّ بعد)</option><option value="surplus">الزيادات (تشمل خارج الدفتر والدفتري السالب)</option><option value="extra">زيادة خارج الدفتر (يدوي)</option><option value="match">مطابق</option><option value="uncounted">غير معدود</option></select>'+
         '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tsec);white-space:nowrap"><input type="checkbox" id="repWho" style="width:16px;height:16px"> إظهار «من أضاف»</label>'+
       '</div>'+
       '<div class="rtable-wrap"><div id="repTable"><p class="muted" style="padding:12px">جارٍ الحساب…</p></div></div>'+
@@ -3749,7 +3751,7 @@ function renderReportSummary(){
     ftile('المعدود',fmt(s.counted),'','counted')+
     ftile('لم تُعد بعد',fmt(s.uncounted)+(hasCost&&s.uncountedBookVal?' <span class="muted" style="font-size:12px;font-weight:500">('+money(s.uncountedBookVal)+')</span>':''),s.uncounted?'':'pos','uncounted')+
     ftile('مطابق',fmt(s.match),s.match?'pos':'','match')+
-    ftile('عجز',fmt(s.deficit),s.deficit?'neg':'','deficit')+
+    ftile('عجز',fmt(s.downTotal),s.downTotal?'neg':'','deficit')+
     ftile('زيادة',fmt(s.upTotal),'','surplus')+
     ftile('خارج الدفتر',fmt(s.extra),'','extra')+
     vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
@@ -3765,9 +3767,10 @@ function filteredReportRows(){
   let rows=repRows;
   if(cat)rows=rows.filter(r=>r.category===cat);
   if(q){ const qn=arNorm(q); rows=rows.filter(r=>(r.code&&arNorm(r.code).indexOf(qn)>=0)||(r.name&&arNorm(r.name).indexOf(qn)>=0)||(r.barcode&&arNorm(r.barcode).indexOf(qn)>=0)||(r.notes&&r.notes.some(n=>arNorm(n.text||'').indexOf(qn)>=0))); }
-  if(stf==='var')rows=rows.filter(r=>r.status==='deficit'||r.isUp); // الفروقات = عجز + كل الزيادات
+  if(stf==='var')rows=rows.filter(r=>r.isDown||r.isUp); // الفروقات = العجز الشامل + الزيادات الشاملة
   else if(stf==='counted')rows=rows.filter(r=>r.isCounted);
   else if(stf==='surplus')rows=rows.filter(r=>r.isUp); // مرشّح «الزيادات» شامل (طلب العميل): زيادة + خارج الدفتر + دفتري سالب
+  else if(stf==='deficit')rows=rows.filter(r=>r.isDown); // مرشّح «العجز» شامل (طلب العميل): عجز + ما لم يُعدّ بعد — مرآة الزيادات
   else if(stf!=='all')rows=rows.filter(r=>r.status===stf);
   // ر٤: فرز بالنقر — نصّي بالتطبيع، رقمي بالقيمة
   if(repSortKey){ const numK={book:1,counted:1,diff:1,cost:1,bookValue:1,countedValue:1,varValue:1};
@@ -3798,7 +3801,7 @@ function renderReportRows(){
       '<td class="num">'+(r.book!=null?fmt(r.book):'—')+'</td>'+
       '<td class="num">'+(r.isCounted?fmt(r.counted):'—')+'</td>'+
       '<td class="num">'+diffCell+'</td>'+
-      '<td><span class="st '+r.status+'">'+STLABEL[r.status]+'</span>'+((r.book!=null&&r.book<0)?' <span class="tag" style="font-size:10px" title="رُفع في ملف الجرد برصيد دفتري سالب — يُحسب ضمن الزيادات">دفتري سالب</span>':'')+'</td>'+
+      '<td><span class="st '+r.status+'">'+STLABEL[r.status]+'</span>'+((r.book!=null&&r.book<0)?' <span class="tag" style="font-size:10px" title="رُفع في ملف الجرد برصيد دفتري سالب — يُحسب ضمن الزيادات">دفتري سالب</span>':'')+((r.status==='uncounted'&&r.book!=null&&r.book>0)?' <span class="tag" style="font-size:10px" title="لم يُعدّ بعد — سيُعامل صفرًا ويُحسب ضمن العجز">يُحسب عجزًا</span>':'')+'</td>'+
       '<td class="num">'+(r.cost!=null?fmt(r.cost):'—')+'</td>'+
       '<td class="num">'+(r.bookValue!=null?fmt(round2(r.bookValue)):'—')+'</td>'+
       '<td class="num">'+(r.countedValue!=null?fmt(round2(r.countedValue)):'—')+'</td>'+
@@ -3867,7 +3870,7 @@ const PRINT_COLDEF={
   book:      {th:'الكمية الدفترية', num:true, get:r=>r.book!=null?fmt(r.book):'—', sum:r=>r.book},
   counted:   {th:'الكمية الفعلية',  num:true, get:r=>r.isCounted?fmt(r.counted):'—', sum:r=>r.isCounted?r.counted:null},
   diff:      {th:'الفارق',          num:true, get:r=>r.hasDiff?((r.diff>0?'+':'')+fmt(r.diff)):'—', sum:r=>r.hasDiff?r.diff:null},
-  status:    {th:'الحالة',          get:r=>esc((STLABEL[r.status]||'')+((r.book!=null&&r.book<0)?' — دفتري سالب':''))},
+  status:    {th:'الحالة',          get:r=>esc((STLABEL[r.status]||'')+((r.book!=null&&r.book<0)?' — دفتري سالب':'')+((r.status==='uncounted'&&r.book!=null&&r.book>0)?' — يُحسب عجزًا':''))},
   cost:      {th:'التكلفة',         num:true, get:r=>r.cost!=null?fmt(r.cost):'—'},
   bookVal:   {th:'القيمة الدفترية', num:true, get:r=>r.bookValue!=null?fmt(round2(r.bookValue)):'—', sum:r=>r.bookValue},
   countedVal:{th:'القيمة الفعلية',  num:true, get:r=>r.countedValue!=null?fmt(round2(r.countedValue)):'—', sum:r=>r.countedValue},
@@ -3897,7 +3900,7 @@ function buildPrintReport(reasonKey){
   if(R.summary){ const s2=summarize(rows); const hasCost=s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—';
     const chip=(k,v)=>'<span style="border:1px solid #ccc;border-radius:6px;padding:4px 10px">'+k+': <b>'+v+'</b></span>';
     html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px">'+
-      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.deficit))+chip('زيادة',fmt(s2.upTotal))+chip('خارج الدفتر',fmt(s2.extra))+
+      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.downTotal))+chip('زيادة',fmt(s2.upTotal))+chip('خارج الدفتر',fmt(s2.extra))+
       chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar))+'</div>';
   }
   const th=cols.map(c=>'<th style="border:1px solid #999;padding:5px 7px;background:#E8EEF9;color:#142440;'+(PRINT_COLDEF[c].num?'text-align:center':'text-align:right')+'">'+esc(PRINT_COLDEF[c].th)+'</th>').join('');
