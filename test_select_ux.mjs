@@ -223,6 +223,27 @@ const SESS1={ id:'sx', name:'جرد الاختبار', status:'approved', approv
   ok('M5 Escape يغلق اللوحة العصرية', closed===true);
   await page.close(); }
 
+// ===== M6 — إصلاح هونر (~488px): لا فيض أفقيًّا في التقرير رغم القوائم ذات الخيارات الطويلة =====
+{ const mctx = await browser.newContext({ viewport: { width: 488, height: 900 } });
+  const page = await mctx.newPage();
+  const items=Array.from({length:40},(_,i)=>({code:'F'+(1000+i),name:'صنف أثاث '+i,category:'كراسي',book:5,cost:12}));
+  await load(page,{profile:prof('u_owner'),users:USERS,sessions:[{id:'sfx',name:'جرد مستودع الاثاث',status:'review',location:'مستودع الاثاث',itemCount:40,__chunks:[items],__counts:[{code:'F1000',qty:3}]}]});
+  await page.evaluate(()=>window.__openReport('sfx')); await page.waitForTimeout(500);
+  const m=await page.evaluate(()=>{
+    const de=document.documentElement;
+    const nat=document.getElementById('repStatus'); const w=nat?nat.closest('.msel'):null;
+    const nr=nat?nat.getBoundingClientRect():null, wr=w?w.getBoundingClientRect():null;
+    return { sw:de.scrollWidth, vw:innerWidth,
+      natClamped: nr&&wr ? (nr.width<=wr.width+1) : null,
+      clip:getComputedStyle(document.querySelector('.mainpane')).overflowX,
+      tileTxt:(document.querySelector('#repTiles .tile .v')||{}).textContent||'' };
+  });
+  ok('M6 التقرير على عرض هونر (488): لا تمرير أفقيًّا للصفحة', m.sw<=m.vw, JSON.stringify(m));
+  ok('M6 القائمة الأصلية المخفية مقيّدة بعرض غلافها (لا 322px)', m.natClamped===true, JSON.stringify(m));
+  ok('M6 مظلة المحتوى overflow-x:clip فاعلة', m.clip==='clip', m.clip);
+  ok('M6 بلاطات التقرير معبّأة بالأرقام', /\d/.test(m.tileTxt), m.tileTxt);
+  await page.close(); await mctx.close(); }
+
 await browser.close();
 
 let pass=0, fail=0;
