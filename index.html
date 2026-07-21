@@ -721,12 +721,46 @@ input:not([type="checkbox"]):not([type="radio"]):not(.rcap):not(.rtask):focus,te
 #notifDrawer .nhead .iconbtn:active,.udrawer-head .iconbtn:active,.ck-in .ckclose:active{transform:rotate(90deg) scale(.85)}
 .ck-in .ckclose{display:none} /* على المكتب يكفي Esc والنقر خارجًا */
 @media(max-width:820px){ .ck-in .ckclose{display:grid} .ck-in .kbd{display:none} }
-/* انسحاب درج الإشعارات عكس دخوله تمامًا (اللوحة تنزلق خارجًا والتعتيم يتلاشى) ثم إخفاء تام */
-@keyframes drwOut{to{transform:translateX(-102%)}}
+/* انسحاب درج الإشعارات عكس دخوله ثم إخفاء تام */
 @keyframes fadeOutOv{to{opacity:0}}
 #notifDrawer.closing{display:block;pointer-events:none}
-#notifDrawer.closing .npanel{animation:drwOut .3s var(--ease) forwards}
 #notifDrawer.closing #notifOverlay{animation:fadeOutOv .26s linear forwards}
+/* ═══ اعتماد العميل: مركز الإشعارات «الزجاجي» + حركة «الزنبرك المرتد» ═══ */
+/* اللوحة: شفافية مضبوبة بضباب خلفي (ألفا > 0 ⇒ عقد الصلابة N13 محفوظ) + توهجات لونية خلف المحتوى */
+#notifDrawer .npanel{background:color-mix(in srgb,var(--page) 76%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5)}
+#notifDrawer .nhead,#notifDrawer .ntabs,#notifDrawer .nfilters,#notifDrawer .nsearch,#notifDrawer .nfootbar,#notifDrawer .nprefs{background:color-mix(in srgb,var(--card) 62%,transparent);position:relative;z-index:1}
+#notifDrawer #notifList{position:relative;z-index:1}
+#notifDrawer .nblobs{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#notifDrawer .nblobs i{position:absolute;border-radius:50%;filter:blur(46px);opacity:.4}
+#notifDrawer .nblobs i:nth-child(1){width:230px;height:230px;background:#6366F1;top:110px;inset-inline-start:-60px}
+#notifDrawer .nblobs i:nth-child(2){width:210px;height:210px;background:#C9A227;top:44%;inset-inline-end:-50px}
+#notifDrawer .nblobs i:nth-child(3){width:180px;height:180px;background:#3FBE8A;bottom:80px;inset-inline-start:30px}
+[data-theme="dark"] #notifDrawer .nblobs i{opacity:.26}
+/* البطاقات الزجاجية: شفافية + ضباب + حدّ فاتح + شريط جانبي بالحالة (غير مقروء/مثبّت/حرج) */
+#notifDrawer .nitem{background:color-mix(in srgb,var(--card) 46%,transparent);border:1px solid color-mix(in srgb,#ffffff 36%,var(--border));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:14px}
+[data-theme="dark"] #notifDrawer .nitem{border-color:color-mix(in srgb,#ffffff 12%,var(--border))}
+#notifDrawer .nitem:hover{transform:translateY(-1px);box-shadow:var(--e3);border-color:color-mix(in srgb,var(--navy700) 34%,var(--border))}
+#notifDrawer .nitem.unread{background:color-mix(in srgb,var(--card) 62%,transparent);border-inline-start:3px solid var(--navy700)}
+#notifDrawer .nitem.pinned{background:color-mix(in srgb,#C9A227 9%,color-mix(in srgb,var(--card) 46%,transparent));border-inline-start:3px solid #C9A227}
+#notifDrawer .nitem.critical{background:color-mix(in srgb,var(--danger) 8%,color-mix(in srgb,var(--card) 46%,transparent));border-inline-start:3px solid var(--danger)}
+/* الزنبرك المرتد «من زر الجرس نفسه» (طلب العميل): اللوحة تتفتّح من زاوية الجرس بارتداد ثم تستقر — وتنكمش إليه عند الإغلاق */
+#notifDrawer .npanel{transform-origin:top left} /* زاوية الجرس في تخطيط RTL */
+@keyframes drwSpringIn{0%{opacity:0;transform:scale(.12)}62%{opacity:1;transform:scale(1.03)}85%{transform:scale(.996)}100%{transform:scale(1)}}
+@keyframes drwSpringOut{0%{transform:scale(1)}26%{transform:scale(1.015)}100%{opacity:0;transform:scale(.1)}}
+#notifDrawer.open .npanel{animation:drwSpringIn .48s cubic-bezier(.3,.85,.42,1)}
+#notifDrawer.closing .npanel{animation:drwSpringOut .28s var(--ease) forwards}
+/* اعتماد العميل «ج١+س١»: ⚙ دوران زنبركي ربع دورة عند التحويم (× تدور ٩٠° وتحمرّ — مطبّقة) */
+#notifDrawer #notifPrefsBtn svg{transition:transform .45s cubic-bezier(.34,1.2,.5,1)}
+#notifDrawer #notifPrefsBtn:hover svg{transform:rotate(90deg)}
+#notifDrawer #notifPrefsBtn:active{transform:scale(.86)}
+#notifDrawer #notifPrefsBtn.on{border-color:var(--navy700);color:var(--navy700);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--navy700) 12%,transparent)}
+#notifDrawer #notifPrefsBtn.on svg{transform:rotate(60deg)}
+/* التفضيلات: لوحة منبثقة زجاجية بسهم من زر ⚙ — تحرّر قاع الدرج لقائمة الإشعارات */
+#notifDrawer .nprefs{display:none;position:absolute;top:64px;inset-inline-end:12px;width:min(330px,90%);z-index:7;border:1px solid color-mix(in srgb,#ffffff 34%,var(--border));border-radius:14px;box-shadow:var(--e4);background:color-mix(in srgb,var(--card) 92%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);transform-origin:top center;padding:12px 16px}
+[data-theme="dark"] #notifDrawer .nprefs{border-color:color-mix(in srgb,#ffffff 12%,var(--border))}
+#notifDrawer .nprefs.open{display:block;animation:prefIn .3s cubic-bezier(.34,1.2,.5,1)}
+@keyframes prefIn{0%{opacity:0;transform:scale(.85)}70%{opacity:1;transform:scale(1.02)}100%{transform:scale(1)}}
+#notifDrawer .nprefs::before{content:"";position:absolute;top:-6.5px;inset-inline-end:16px;width:12px;height:12px;background:inherit;border-inline-start:1px solid;border-top:1px solid;border-color:inherit;transform:rotate(45deg)}
 /* ═══ قفل هندسة مربّعات الاختيار (توحيد نهائي): قواعد الحاويات العامة (.field input عرض/حشوة، .rtools input تمدّد min-width…)
    كانت تشوّه المربّع شريطًا أو تنفخه — القفل يثبّت 18px أينما وُجد، و24px على اللمس/الشاشات الضيقة ═══ */
 input[type="checkbox"]:not(.rcap):not(.rtask){width:18px!important;min-width:18px!important;max-width:18px!important;height:18px!important;min-height:18px!important;max-height:18px!important;padding:0!important;flex:none!important;border-radius:7px!important}
@@ -915,7 +949,8 @@ input[type="checkbox"]:not(.rcap):not(.rtask){width:18px!important;min-width:18p
 <div id="notifDrawer" aria-hidden="true">
   <div id="notifOverlay"></div>
   <div class="npanel" role="dialog" aria-modal="true" aria-label="مركز الإشعارات">
-    <div class="nhead"><div style="flex:1;min-width:0"><h2>🔔 الإشعارات</h2><div class="nsub" id="notifSub"></div></div><button class="iconbtn" id="notifClose" aria-label="إغلاق">✕</button></div>
+    <div class="nblobs" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="nhead"><div style="flex:1;min-width:0"><h2>🔔 الإشعارات</h2><div class="nsub" id="notifSub"></div></div><button class="iconbtn" id="notifPrefsBtn" aria-label="إعدادات الإشعارات" title="إعدادات الإشعارات"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg></button><button class="iconbtn" id="notifClose" aria-label="إغلاق">✕</button></div>
     <div class="ntabs" id="notifTabs"><button class="ntab on" data-ntab="all">الكل</button><button class="ntab" data-ntab="unread">غير المقروء</button></div>
     <div class="nfilters" id="notifFilters"><button class="nfilt on" data-cat="all">كل الفئات</button><button class="nfilt" data-cat="create">إنشاء</button><button class="nfilt" data-cat="assign">تكليف</button><button class="nfilt" data-cat="review">مراجعة</button><button class="nfilt" data-cat="approve">اعتماد</button><button class="nfilt" data-cat="variance">فروقات</button><button class="nfilt" data-cat="sync">مزامنة</button></div>
     <div class="nsearch"><svg class="nsico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="notifSearch" placeholder="بحث في الإشعارات…" aria-label="بحث في الإشعارات" autocomplete="off"><button class="nsclear" id="notifSearchClear" aria-label="مسح البحث" style="display:none"></button></div>
@@ -1400,13 +1435,19 @@ async function openNotifDrawer(){ if(!myProfile)return;
   try{ const qs=await getDocs(collection(db,'sessions')); const list=[]; qs.forEach(d=>{const s=d.data(); if(s&&s.deleted!==true)list.push(Object.assign({id:d.id},s));}); await notifEnrichVariance(list); _notifCache=list; }catch(e){}
   const dr=$('notifDrawer'); if(!dr)return; dr.classList.remove('closing'); clearTimeout(dr._ct); dr.classList.add('open'); dr.setAttribute('aria-hidden','false'); renderNotifChrome(); renderNotifList(); refreshNotifBadge();
 }
+function notifPrefsSet(on){ const pf=document.querySelector('#notifDrawer .nprefs'), pb=$('notifPrefsBtn');
+  if(pf)pf.classList.toggle('open',!!on); if(pb)pb.classList.toggle('on',!!on); if(on)renderNotifChrome(); }
+function notifPrefsOpen(){ const pf=document.querySelector('#notifDrawer .nprefs'); return !!(pf&&pf.classList.contains('open')); }
 function closeNotifDrawer(){ const dr=$('notifDrawer'); if(!dr||!dr.classList.contains('open'))return;
+  notifPrefsSet(false); // أغلق لوحة الإعدادات مع الدرج
   dr.classList.remove('open'); dr.setAttribute('aria-hidden','true');
-  dr.classList.add('closing'); clearTimeout(dr._ct); dr._ct=setTimeout(()=>{ dr.classList.remove('closing'); },320); } // انسحاب عكسي يطابق الدخول ثم إخفاء تام
+  dr.classList.add('closing'); clearTimeout(dr._ct); dr._ct=setTimeout(()=>{ dr.classList.remove('closing'); },320); } // انكماش إلى الجرس ثم إخفاء تام
 function markAllNotifRead(){ const items=deriveNotifs(_notifCache); const max=items.reduce((m,x)=>Math.max(m,x.at),0); const p=notifPrefs(); p.seenAt=Math.max(p.seenAt||0,max,tsMs({__ts:Date.now()})); p.read={}; saveNotifPrefs(p); renderNotifList(); refreshNotifBadge(); }
 function notifWire(){
   const bell=$('notifBell'); if(bell&&!bell._w){ bell._w=1; bell.onclick=openNotifDrawer; }
   const cl=$('notifClose'); if(cl)cl.onclick=closeNotifDrawer;
+  const pb=$('notifPrefsBtn'); if(pb&&!pb._w){ pb._w=1; pb.onclick=(e)=>{ e.stopPropagation(); notifPrefsSet(!notifPrefsOpen()); }; }
+  if(!document._notifPrefDoc){ document._notifPrefDoc=1; document.addEventListener('mousedown',(e)=>{ if(notifPrefsOpen()&&!(e.target.closest&&(e.target.closest('.nprefs')||e.target.closest('#notifPrefsBtn')))) notifPrefsSet(false); },true); }
   const ma=$('notifMarkAll'); if(ma)ma.onclick=markAllNotifRead;
   const ov=$('notifOverlay'); if(ov)ov.onclick=closeNotifDrawer;
   document.querySelectorAll('#notifTabs .ntab').forEach(b=>b.onclick=()=>{ _notifTab=b.getAttribute('data-ntab'); renderNotifChrome(); renderNotifList(); });
@@ -1416,7 +1457,7 @@ function notifWire(){
   const q=$('notifQuiet'); if(q)q.onchange=()=>{ const p=notifPrefs(); p.quiet=q.checked; saveNotifPrefs(p); };
   const s=$('notifSound'); if(s)s.onchange=()=>{ const p=notifPrefs(); p.sound=s.checked; saveNotifPrefs(p); };
   document.querySelectorAll('#notifDrawer .nmute').forEach(c=>c.onchange=()=>{ const p=notifPrefs(); p.muted=p.muted||{}; p.muted[c.getAttribute('data-cat')]=c.checked; saveNotifPrefs(p); renderNotifChrome(); renderNotifList(); refreshNotifBadge(); });
-  if(!document._notifEsc){ document._notifEsc=1; document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const dr=$('notifDrawer'); if(dr&&dr.classList.contains('open'))closeNotifDrawer(); } }); }
+  if(!document._notifEsc){ document._notifEsc=1; document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(notifPrefsOpen()){ notifPrefsSet(false); return; } const dr=$('notifDrawer'); if(dr&&dr.classList.contains('open'))closeNotifDrawer(); } }); }
 }
 function notifInit(){ notifWire(); _notifInited=false;
   getDocs(collection(db,'sessions')).then(async qs=>{ const list=[]; qs.forEach(d=>{const s=d.data(); if(s&&s.deleted!==true)list.push(Object.assign({id:d.id},s));}); await notifEnrichVariance(list); refreshNotifBadge(list); _notifInited=true; }).catch(e=>{ _notifInited=true; }); }

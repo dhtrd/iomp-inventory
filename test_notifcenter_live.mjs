@@ -226,7 +226,7 @@ const lsPrefs=(page,uid)=>page.evaluate((u)=>{ try{ return JSON.parse(localStora
     return { radius:cs.borderRadius, borderW:cs.borderTopWidth, icoRad:ci.borderRadius, clock:!!document.querySelector('#notifList .ntime svg'),
       footerBtn:!!foot, btnW:ma?ma.getBoundingClientRect().width:0, panelW:document.querySelector('#notifDrawer .npanel').getBoundingClientRect().width,
       sub:sub?sub.textContent:'', headHasBtn:!!document.querySelector('#notifDrawer .nhead #notifMarkAll') }; });
-  ok('N18 البطاقة مدوّرة 12px وبحد ظاهر', st.radius==='12px'&&st.borderW==='1px', JSON.stringify({r:st.radius,b:st.borderW}));
+  ok('N18 البطاقة مدوّرة (≥12px) وبحد ظاهر', parseFloat(st.radius)>=12&&st.borderW==='1px', JSON.stringify({r:st.radius,b:st.borderW}));
   ok('N18 الصورة الرمزية دائرية + وقت بأيقونة ساعة', (parseFloat(st.icoRad)>=18||st.icoRad==='50%')&&st.clock, JSON.stringify({i:st.icoRad,c:st.clock}));
   ok('N18 زر «تمييز الكل» عريض أسفل اللوحة (لا في الترويسة)', st.footerBtn&&!st.headHasBtn&&st.btnW>st.panelW*0.8, JSON.stringify({w:Math.round(st.btnW),p:Math.round(st.panelW)}));
   ok('N18 سطر الملخّص يعرض عدد غير المقروء', st.sub.includes('3'), st.sub);
@@ -273,6 +273,25 @@ const lsPrefs=(page,uid)=>page.evaluate((u)=>{ try{ return JSON.parse(localStora
   await page.evaluate(()=>document.getElementById('ckBtn').click()); await page.waitForTimeout(200);
   const d=await page.evaluate(()=>getComputedStyle(document.getElementById('ckClose')).display);
   ok('N21 على المكتب: يبقى Esc ويُخفى الزر', d==='none', d);
+  await page.close(); }
+
+// ===== N22 — التفضيلات لوحة منبثقة من زر ⚙ بجانب × (وزر «تمييز الكل» باقٍ أسفل الدرج) =====
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER,CT],sessions:OWN_SESS});
+  await openBell(page);
+  const g=await page.evaluate(()=>{ const b=document.getElementById('notifPrefsBtn'); const cs=b?getComputedStyle(b):null; const pf=document.querySelector('#notifDrawer .nprefs');
+    const head=document.querySelector('#notifDrawer .nhead'); return { has:!!b, inHead:!!(b&&head.contains(b)), framed:cs?cs.borderTopWidth==='1px':false,
+      hidden:getComputedStyle(pf).display==='none', ma:getComputedStyle(document.getElementById('notifMarkAll')).display!=='none' }; });
+  ok('N22 زر ⚙ مؤطّر بجانب × والتفضيلات مخفية ابتداءً و«تمييز الكل» باقٍ', g.has&&g.inHead&&g.framed&&g.hidden&&g.ma, JSON.stringify(g));
+  await page.evaluate(()=>document.getElementById('notifPrefsBtn').click()); await page.waitForTimeout(300);
+  const o=await page.evaluate(()=>{ const pf=document.querySelector('#notifDrawer .nprefs'); const cs=getComputedStyle(pf);
+    return { open:pf.classList.contains('open'), disp:cs.display, pos:cs.position, quiet:!!document.getElementById('notifQuiet'), btnOn:document.getElementById('notifPrefsBtn').classList.contains('on') }; });
+  ok('N22 ⚙ يفتح لوحة منبثقة (absolute) فيها التفضيلات وزرّه يتفعّل', o.open&&o.disp==='block'&&o.pos==='absolute'&&o.quiet&&o.btnOn, JSON.stringify(o));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+  const e1=await page.evaluate(()=>({ pf:document.querySelector('#notifDrawer .nprefs').classList.contains('open'), dr:document.getElementById('notifDrawer').classList.contains('open') }));
+  ok('N22 سلّم Esc: يغلق اللوحة أولًا والدرج يبقى', !e1.pf&&e1.dr, JSON.stringify(e1));
+  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+  const e2=await page.evaluate(()=>document.getElementById('notifDrawer').classList.contains('open'));
+  ok('N22 وEsc الثانية تغلق الدرج', e2===false);
   await page.close(); }
 
 await browser.close();
