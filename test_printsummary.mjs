@@ -46,7 +46,31 @@ const openR=async(page)=>{ await page.evaluate(()=>window.__openReport('sx')); a
 // ===== P3 — {date} = تاريخ بدء العد الفعلي =====
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})}); await openR(page);
   const ctxv=await page.evaluate(()=>window.__docVarCtx('committee'));
-  ok('P3 {date} = 20/07/2024 (بدء العد، لا اليوم)', ctxv['{date}']==='20/07/2024', ctxv['{date}']);
+  ok('P3 {date} = «اسم اليوم 20/07/2024» (بدء الجرد لا اليوم)', /^(الأحد|الاثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت) 20\/07\/2024$/.test(ctxv['{date}']), ctxv['{date}']);
+  ok('P3 {dayName} اسم يوم بدء الجرد', /^(الأحد|الاثنين|الثلاثاء|الأربعاء|الخميس|الجمعة|السبت)$/.test(ctxv['{dayName}']), ctxv['{dayName}']);
+  await page.close(); }
+
+// ===== P7 — المحاضر الملخّصة بكتلة إجماليات عمودية (تصميم النموذج)؛ التقرير المفصّل بشرائح =====
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})}); await openR(page);
+  const committee=await page.evaluate(()=>window.__buildReasonPrint('committee'));
+  const handover=await page.evaluate(()=>window.__buildReasonPrint('handover'));
+  const detailed=await page.evaluate(()=>window.__buildReasonPrint('detailed'));
+  ok('P7 محضر الجرد: كتلة عمودية (#F3F6FC) لا شرائح', committee.includes('#F3F6FC')&&committee.includes('صافي قيمة الفروقات (الفارق)'), '');
+  ok('P7 محضر الاستلام: كتلة عمودية', handover.includes('#F3F6FC'), '');
+  ok('P7 التقرير المفصّل يبقى بالشرائح (لا كتلة عمودية)', !detailed.includes('#F3F6FC'), '');
+  await page.close(); }
+
+// ===== P8 — محرّر أعضاء اللجنة من شاشة التقرير (إدارة): حذف عضو ينعكس فورًا =====
+{ const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})}); await openR(page);
+  const hasBtn=await page.evaluate(()=>window.__has('repSigBtn')&&window.__has('repSigPanel'));
+  ok('P8 زر ولوحة أعضاء اللجنة على شاشة التقرير', hasBtn===true, '');
+  await page.evaluate(()=>{ document.getElementById('repSigBtn').click(); }); await page.waitForTimeout(60);
+  const rows0=await page.evaluate(()=>document.querySelectorAll('#repSigRows [data-i]').length);
+  await page.evaluate(()=>{ const b=document.querySelector('#repSigRows .sigedit-x'); if(b)b.click(); }); await page.waitForTimeout(60);
+  const rows1=await page.evaluate(()=>document.querySelectorAll('#repSigRows [data-i]').length);
+  const printCells=await page.evaluate(()=>{ const h=window.__buildReasonPrint('committee'); return (h.match(/التوقيع:/g)||[]).length; });
+  ok('P8 حذف عضو من الشاشة ينقص القائمة', rows0>=3&&rows1===rows0-1, rows0+'→'+rows1);
+  ok('P8 وينعكس على المحضر فورًا', printCells===rows1+1/*+مسؤول الموقع*/, 'cells='+printCells+' rows='+rows1);
   await page.close(); }
 
 // ===== P4 — محرّر أعضاء اللجنة: الحذف ينعكس على المحضر فورًا =====

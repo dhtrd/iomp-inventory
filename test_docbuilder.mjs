@@ -92,7 +92,7 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
   const pr=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('detailed'); }catch(e){ return 'ERR:'+e.message; } });
   ok('DB7 التقرير المفصّل يتضمن اليدوي، وشريحة خارج الدفتر', pr.includes('رف يدوي')&&pr.includes('خارج الدفتر'), pr.slice(0,80));
   const prc=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('committee'); }catch(e){ return 'ERR:'+e.message; } });
-  ok('DB7 محضر اللجنة الملخّص يعدّ اليدوي في «منها خارج الدفتر» (بلا جدول)', prc.includes('منها خارج الدفتر')&&!prc.includes('<table'), prc.slice(0,80));
+  ok('DB7 محضر اللجنة الملخّص: كتلة إجماليات عمودية بلا جدول', prc.includes('#F3F6FC')&&!prc.includes('<table'), prc.slice(0,80));
   await page.close(); }
 
 await browser.close();

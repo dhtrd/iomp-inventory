@@ -21,7 +21,7 @@ function chip(html,k){ const m=html.match(new RegExp(k.replace(/[.*+?^${}()|[\]\
 // ===== V1 — الطباعة: مبلغ الزيادة/العجز/الصافي مع الكميات =====
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
-  const html=await page.evaluate(()=>window.__buildReasonPrint('committee'));
+  const html=await page.evaluate(()=>window.__buildReasonPrint('detailed')); // الشرائح في التقرير المفصّل (المحاضر صارت كتلة عمودية)
   ok('V1 مبلغ الزيادة = 358.8 (+15 وحدة)', chip(html,'مبلغ الزيادة')==='358.8 (+15 وحدة)', chip(html,'مبلغ الزيادة'));
   ok('V1 مبلغ العجز = 80 (−4 وحدة)', chip(html,'مبلغ العجز')==='80 (−4 وحدة)', chip(html,'مبلغ العجز'));
   ok('V1 صافي الفرق = 278.8 (+11 وحدة)', chip(html,'صافي الفرق')==='278.8 (+11 وحدة)', chip(html,'صافي الفرق'));
