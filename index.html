@@ -3079,7 +3079,9 @@ function docSignatories(){
   return [{label:'رئيس اللجنة'},{label:'عضو اللجنة'},{label:'عضو اللجنة'}]; } // الافتراض: لجنة ثلاثية (سلوك اليوم)
 // المحطّة ٤ (مُنشئ المستندات الرسمية): قوالب محاضر قابلة للتحرير (عنوان/تمهيد/فقرات مرقّمة) بمتغيّرات نائبة — settings.docTemplates[reasonKey]. قابلة للتوسّع.
 const DOC_VARS=[{k:'{company}',d:'اسم الشركة'},{k:'{document}',d:'اسم المستند'},{k:'{session}',d:'اسم الجلسة'},{k:'{location}',d:'الموقع/المستودع'},{k:'{date}',d:'التاريخ'},{k:'{items}',d:'عدد الأصناف'},{k:'{counted}',d:'المعدود'},{k:'{netVar}',d:'صافي الفروقات'},{k:'{approver}',d:'المعتمِد'},
-  {k:'{committee}',d:'أعضاء لجنة الجرد'},{k:'{newResp}',d:'المسؤول الجديد (إن وجد)'},{k:'{oldResp}',d:'المسؤول السابق (إن وجد)'},{k:'{branchMgr}',d:'مسؤول الفرع (إن سُجّل)'},{k:'{totalCost}',d:'إجمالي التكلفة الدفترية'},{k:'{totalActual}',d:'إجمالي قيمة الفعلي'},{k:'{onHand}',d:'إجمالي الكمية في اليد'}];
+  {k:'{committee}',d:'أعضاء لجنة الجرد'},{k:'{newResp}',d:'المسؤول الجديد (إن وجد)'},{k:'{oldResp}',d:'المسؤول السابق (إن وجد)'},{k:'{branchMgr}',d:'مسؤول الفرع (إن سُجّل)'},{k:'{totalCost}',d:'إجمالي التكلفة الدفترية'},{k:'{totalActual}',d:'إجمالي قيمة الفعلي'},{k:'{onHand}',d:'إجمالي الكمية في اليد'},
+  // م٦-٣: متغيّرات المبالغ والكميات للفروقات — للصيغة الصحيحة (مبلغ الزيادة/العجز/الصافي + الكميات)
+  {k:'{surplusVal}',d:'مبلغ الزيادة'},{k:'{deficitVal}',d:'مبلغ العجز'},{k:'{surplusQty}',d:'كمية الزيادة'},{k:'{deficitQty}',d:'كمية العجز'},{k:'{netQty}',d:'صافي فرق الكميات'},{k:'{countedQty}',d:'إجمالي الكميات المعدودة'},{k:'{bookQty}',d:'إجمالي الكميات الدفترية'}];
 // التاريخ المعتمد للمحاضر: تاريخ بدء العد الفعلي (startedAt) — لا تاريخ الطباعة؛ وبغيابه تاريخ اليوم
 function officialDate(){ const t=repSess&&repSess.startedAt; if(!t) return new Date().toLocaleDateString('en-GB');
   const d=(t&&typeof t.toDate==='function')?t.toDate():new Date(t.__ts||t.seconds*1000||t); return isNaN(+d)?new Date().toLocaleDateString('en-GB'):d.toLocaleDateString('en-GB'); }
@@ -3093,7 +3095,9 @@ function docVarCtx(reasonKey,rows){ const s2=summarize(rows||[]); const R=PRINT_
     '{committee}':docSignatories().map(x=>x.name?(x.label+': '+x.name):x.label).join('، ')||'—', // موقّعو الجلسة المسجّلون (مسمى: اسم) لهم الأولوية
     '{newResp}':who(cn),'{oldResp}':who(cp),
     '{branchMgr}':((repSess&&repSess.responsible&&repSess.responsible.name)||(repSess&&repSess.custodyNext&&repSess.custodyNext.name)||'—'), // مسؤول الموقع المسجَّل بالجلسة (وبعد الاستلام: المستلم الجديد)
-    '{totalCost}':finV?fmt(round2(s2.bookVal)):'—','{totalActual}':finV?fmt(round2(s2.countedVal)):'—','{onHand}':fmt(round2(qty)) }; }
+    '{totalCost}':finV?fmt(round2(s2.bookVal)):'—','{totalActual}':finV?fmt(round2(s2.countedVal)):'—','{onHand}':fmt(round2(qty)),
+    // م٦-٣: مبالغ الفروقات وكمّياتها للصيغة
+    '{surplusVal}':finV?fmt(round2(s2.surplusVal)):'—','{deficitVal}':finV?fmt(round2(Math.abs(s2.deficitVal))):'—','{surplusQty}':fmt(s2.surplusQty),'{deficitQty}':fmt(s2.deficitQty),'{netQty}':fmt(s2.netQty),'{countedQty}':fmt(round2(s2.countedQty)),'{bookQty}':fmt(round2(s2.bookQty)) }; }
 function docSubst(text,ctx){ let t=String(text==null?'':text); Object.keys(ctx).forEach(k=>{ t=t.split(k).join(ctx[k]); }); return t; }
 function docTemplate(reasonKey){ return (appSettings().docTemplates||{})[reasonKey]||{}; }
 const APP_VERSION='IOMP 1.1 (م١٤–م٣٠ + إصلاحات التدقيق ١–٥ والكفاءة)'; // إصلاح-٦ (بند ٨): تحديث بطاقة الإصدار
@@ -3812,7 +3816,8 @@ function computeVariance(items,counts){
 // ملخصات إجمالية (صافي الفروقات محسوب على المعدود فقط؛ غير المعدود يُفصح عنه منفصلاً).
 function summarize(rows){
   const s={total:rows.length,counted:0,uncounted:0,match:0,surplus:0,deficit:0,nobook:0,extra:0,upTotal:0,downTotal:0,
-    withCost:0,bookVal:0,countedVal:0,netVar:0,surplusVal:0,deficitVal:0,uncountedBookVal:0};
+    withCost:0,bookVal:0,countedVal:0,netVar:0,surplusVal:0,deficitVal:0,uncountedBookVal:0,
+    surplusQty:0,deficitQty:0,netQty:0,bookQty:0,countedQty:0}; // م٦-٣: كميّات الزيادة/العجز/الصافي لعرض «المبلغ مع الكميات» (طلب العميل)
   rows.forEach(r=>{
     if(r.isCounted)s.counted++; else s.uncounted++;
     if(r.status==='match')s.match++; else if(r.status==='surplus')s.surplus++; else if(r.status==='deficit')s.deficit++; else if(r.status==='nobook')s.nobook++; else if(r.status==='extra')s.extra++;
@@ -3822,6 +3827,8 @@ function summarize(rows){
     if(r.bookValue!=null)s.bookVal+=r.bookValue;
     if(r.countedValue!=null)s.countedVal+=r.countedValue;
     if(r.varValue!=null){ s.netVar+=r.varValue; if(r.varValue>0)s.surplusVal+=r.varValue; else if(r.varValue<0)s.deficitVal+=r.varValue; } // صافي = الفعلي − الدفتري (متّسق مع عمود قيمة الفرق وبطاقتَي القيمة)
+    if(r.hasDiff){ if(r.diff>0)s.surplusQty+=r.diff; else if(r.diff<0)s.deficitQty+=(-r.diff); s.netQty+=r.diff; } // م٦-٣: كمّيات الزيادة/العجز/الصافي — بنفس أساس المبالغ (إشارة الفرق)
+    if(r.book!=null)s.bookQty+=r.book; if(r.isCounted)s.countedQty+=r.counted; // م٦-٣: مجاميع الكميات الدفترية/الفعلية للصيغة
     if(!r.isCounted&&r.bookValue!=null)s.uncountedBookVal+=r.bookValue;
   });
   return s;
@@ -3906,6 +3913,7 @@ function repHasNotes(){ return repRows.some(r=>r.notes&&r.notes.length); } // ع
 function renderReportSummary(){
   const s=summarize(repRows); const fin=canSeeFinance(); const hasCost=fin&&s.withCost>0; // م٦-١: بلا الصلاحية المالية تُحجب بلاطات القيم كليًّا
   const money=n=>hasCost?fmt(round2(n)):'—';
+  const qsfx=q=>(q?' <span class="muted" style="font-size:12px;font-weight:500">('+(q>0?'+':'−')+fmt(Math.abs(q))+' وحدة)</span>':''); // م٦-٣: لاحقة الكميات بجانب المبلغ
   const active=$('repStatus')?$('repStatus').value:'all';
   const tile=(k,v,cls)=>'<div class="tile"><div class="k">'+k+'</div><div class="v'+(cls?' '+cls:'')+'">'+v+'</div></div>';
   const vtile=(k,v)=>'<div class="tile val"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
@@ -3917,10 +3925,13 @@ function renderReportSummary(){
     ftile('مطابق',fmt(s.match),s.match?'pos':'','match')+
     ftile('عجز',fmt(s.downTotal),s.downTotal?'neg':'','deficit')+
     ftile('زيادة',fmt(s.upTotal),'','surplus')+
-    ftile('خارج الدفتر',fmt(s.extra),'','extra')+
-    (fin?vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
+    ftile('منها خارج الدفتر',fmt(s.extra),'','extra')+ // م٦-٣: توضيح أنها جزء من الزيادة لا خانة مستقلّة مكرّرة
+    // م٦-٣: مبالغ الزيادة/العجز مع كمّياتها، بحيث «مبلغ الزيادة − مبلغ العجز = صافي الفروقات» (طلب العميل)
+    (fin?vtile('مبلغ الزيادة',money(s.surplusVal)+qsfx(s.surplusQty))+
+    vtile('مبلغ العجز',money(Math.abs(s.deficitVal))+qsfx(-s.deficitQty))+
+    vtile('إجمالي القيمة الدفترية',money(s.bookVal))+
     vtile('إجمالي القيمة الفعلية',money(s.countedVal))+
-    tile('صافي قيمة الفروقات',money(s.netVar),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):''):'');
+    tile('صافي قيمة الفروقات (الفارق)',money(s.netVar)+qsfx(s.netQty),hasCost?(s.netVar<-1e-9?'neg':(s.netVar>1e-9?'pos':'')):''):'');
   $('repTiles').querySelectorAll('[data-f]').forEach(t=>t.onclick=()=>{ const rs=$('repStatus'); if(rs){ rs.value=t.getAttribute('data-f'); if(rs._mselSync)rs._mselSync(); } renderReportRows(); renderReportSummary(); });
 }
 // الترشيح المشترك (يستعمله العرض والطباعة) — يُعيد كامل المطابق للمرشّحات الحالية
@@ -4070,11 +4081,15 @@ function buildPrintReport(reasonKey){
   if(tpl.intro) html+='<div style="font-size:12.5px;line-height:1.9;margin:8px 0;white-space:pre-wrap">'+esc(docSubst(tpl.intro,vctx))+'</div>';
   if(Array.isArray(tpl.clauses)&&tpl.clauses.length) html+='<ol style="font-size:12.5px;line-height:1.9;margin:8px 0;padding-inline-start:22px">'+tpl.clauses.map(c=>'<li>'+esc(docSubst(c,vctx))+'</li>').join('')+'</ol>';
   if(R.summary){ const s2=summarize(rows); const finP=canSeeFinance(); const hasCost=finP&&s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—'; // م٦-١: شرائح القيم للمالية فقط
+    const qs=q=>(q?' ('+(q>0?'+':'−')+fmt(Math.abs(q))+' وحدة)':''); // م٦-٣: الكميات بجانب المبلغ
     const chip=(k,v)=>'<span style="border:1px solid #ccc;border-radius:6px;padding:4px 10px">'+k+': <b>'+v+'</b></span>';
     html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px">'+
-      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.downTotal))+chip('زيادة',fmt(s2.upTotal))+chip('خارج الدفتر',fmt(s2.extra))+
-      (finP?chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar)):'')+'</div>';
+      chip('المعدود',fmt(s2.counted)+' / '+fmt(s2.total))+chip('عجز',fmt(s2.downTotal))+chip('زيادة',fmt(s2.upTotal))+chip('منها خارج الدفتر',fmt(s2.extra))+
+      // م٦-٣: مبالغ الزيادة/العجز مع كمّياتها بحيث «مبلغ الزيادة − مبلغ العجز = صافي الفرق» (طلب العميل)
+      (finP?chip('مبلغ الزيادة',m(s2.surplusVal)+qs(s2.surplusQty))+chip('مبلغ العجز',m(Math.abs(s2.deficitVal))+qs(-s2.deficitQty))+chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar)+qs(s2.netQty)):'')+'</div>';
   }
+  // م٦-٣: تنبيه النطاق — إن كان المطبوع مُصفّى (أقلّ من كامل أصناف الجلسة) كي لا تُقرأ إجمالياته على أنها الجرد الكامل
+  { const full=(repRows&&repRows.length)||rows.length; if(rows.length<full) html+='<div style="font-size:11.5px;color:#B26A12;margin:-4px 0 10px">⚠ تقرير مُصفّى: يعرض '+fmt(rows.length)+' من '+fmt(full)+' صنفًا — الإجماليات أعلاه للمعروض فقط لا لكامل الجرد.</div>'; }
   const dense=cols.length>=10, padTh=dense?'4px 4px':'5px 7px', padTd=dense?'3px 4px':'4px 7px'; // إصلاح م٦: حشو مكثّف للأعمدة الكثيرة كي تتّسع الأرقام بلا التفاف داخلها
   const th=cols.map(c=>'<th style="border:1px solid #999;padding:'+padTh+';background:#E8EEF9;color:#142440;'+(PRINT_COLDEF[c].num?'text-align:center':'text-align:right')+'">'+esc(PRINT_COLDEF[c].th)+'</th>').join('');
   const body=rows.map(r=>'<tr>'+cols.map(c=>{const d=PRINT_COLDEF[c];return '<td style="border:1px solid #bbb;padding:'+padTd+';'+(d.num?'text-align:center;font-variant-numeric:tabular-nums':'text-align:right')+(d.ltr?';direction:ltr;white-space:nowrap':'')+(c==='status'?';white-space:nowrap':'')+'">'+d.get(r)+'</td>';}).join('')+'</tr>').join(''); // إصلاح م٦: الأكواد والحالة لا تنكسر في المنتصف أبدًا
