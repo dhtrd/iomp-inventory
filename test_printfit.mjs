@@ -79,8 +79,10 @@ const count=(s,needle)=>s.split(needle).length-1;
 // ===== P7 — محضر اللجنة: كتلة التواقيع باقية مع الإصلاح (لا انحدار) =====
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:[S1]});
   await openRep(page);
-  const html=await page.evaluate(()=>window.__buildReasonPrint('committee'));
-  ok('P7 التواقيع والجدول معًا', html.includes('التوقيع')&&html.includes('<colgroup')&&html.includes('رئيس اللجنة'));
+  const html=await page.evaluate(()=>window.__buildReasonPrint('custody'));
+  ok('P7 محضر بجدول (عهدة): التواقيع والجدول (colgroup) معًا', html.includes('التوقيع')&&html.includes('<colgroup')&&html.includes('رئيس اللجنة'));
+  const hc=await page.evaluate(()=>window.__buildReasonPrint('committee'));
+  ok('P7 محضر اللجنة الملخّص: تواقيع باقية بلا جدول', hc.includes('التوقيع')&&hc.includes('رئيس اللجنة')&&!hc.includes('<colgroup'));
   await page.close(); }
 
 // ===== P8 — تكامل مع م٦: مطبوعة المطّلع «مراجعة الفرع» ستة أعمدة كمّية بلا مالية =====

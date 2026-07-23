@@ -56,8 +56,8 @@ function chip(html,k){ const m=html.match(new RegExp(k.replace(/[.*+?^${}()|[\]\
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
   // رشّح على «العجز» فقط ثم اطبع → يظهر تنبيه مُصفّى
-  const html=await page.evaluate(()=>{ const rs=document.getElementById('repStatus'); if(rs){ rs.value='deficit'; if(rs._mselSync)rs._mselSync(); } return window.__buildReasonPrint('committee'); });
-  ok('V4 تنبيه «تقرير مُصفّى» يظهر عند الترشيح', html.includes('تقرير مُصفّى'), '');
+  const html=await page.evaluate(()=>{ const rs=document.getElementById('repStatus'); if(rs){ rs.value='deficit'; if(rs._mselSync)rs._mselSync(); } return window.__buildReasonPrint('detailed'); });
+  ok('V4 تنبيه «تقرير مُصفّى» يظهر عند الترشيح في التقرير المفصّل', html.includes('تقرير مُصفّى'), '');
   await page.close(); }
 
 await browser.close();

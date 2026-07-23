@@ -57,7 +57,7 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,approvedByName:'المالك'})});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
   const html=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('varianceSummary'); }catch(e){ return 'ERR:'+e.message; } });
-  ok('M5 ملخّص الفروقات: صنف الفرق فقط (أ) لا (ب/ج)', html.includes('صنف أ') && !html.includes('صنف ب') && !html.includes('صنف ج'), (html||'').slice(0,50));
+  ok('M5 ملخّص الفروقات: محضر ملخّص كتابي بلا جدول أصناف', !html.includes('<table') && html.includes('صافي'), (html||'').slice(0,50));
   ok('M5 يتضمّن أسماء ومسمّيات موقّعي الجلسة', html.includes('أحمد')&&html.includes('خالد')&&html.includes('مدير الجرد'), 'sigs');
   await page.close(); }
 
@@ -65,7 +65,7 @@ async function load(page,sc){ await page.goto(HARNESS+'?s='+encodeURIComponent(b
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:sess({status:'approved',signatories:SIG,custodyPrev:{name:'سعد'},custodyNext:{name:'فهد'}})});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(450);
   const html=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('handover'); }catch(e){ return 'ERR:'+e.message; } });
-  ok('M6 الاستلام: المعدود (أ،ب) لا غير المعدود (ج)', html.includes('صنف أ')&&html.includes('صنف ب')&&!html.includes('صنف ج'), (html||'').slice(0,50));
+  ok('M6 الاستلام: محضر ملخّص كتابي بلا جدول أصناف', !html.includes('<table'), (html||'').slice(0,50));
   ok('M6 كتلتا المُسلِّم/المُستلِم بالأسماء', html.includes('المُسلِّم')&&html.includes('سعد')&&html.includes('المُستلِم')&&html.includes('فهد'), 'custody');
   await page.close(); }
 

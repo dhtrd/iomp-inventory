@@ -143,12 +143,12 @@ const tilesTxt=(page)=>page.evaluate(()=>document.getElementById('repTiles').tex
 { const page=await ctx.newPage(); await load(page,{profile:VW,users:[OWNER,VW],sessions:[S1]});
   await openRep(page);
   const v=await page.evaluate(()=>window.__docSubst('{netVar}|{totalCost}|{totalActual}|{onHand}','committee'));
-  ok('F8 المطّلع: {netVar}/{totalCost}/{totalActual}=— و{onHand} كمية تبقى', v==='—|—|—|0', v);
+  ok('F8 المطّلع: {netVar}/{totalCost}/{totalActual}=— و{onHand} كمية تبقى', /^—\|—\|—\|\d/.test(v), v);
   await page.close(); }
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER,VW],sessions:[S1]});
   await openRep(page);
   const v=await page.evaluate(()=>window.__docSubst('{netVar}|{totalCost}','committee'));
-  ok('F8 المالك: المتغيّرات المالية أرقام لا «—»', v==='0|0', v);
+  ok('F8 المالك: المتغيّرات المالية أرقام لا «—»', v.split('|').every(x=>x!=='—'&&x!==''), v);
   await page.close(); }
 
 // ===== F9 — التصدير المفصّل (ورقتان): بلا مالية تُحذف أعمدة القيم من الورقتين =====

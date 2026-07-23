@@ -234,6 +234,8 @@ window.__openPrintDialog = ()=>{ try{ openPrintDialog(); }catch(e){} };
 window.__openExportDialog = ()=>{ try{ openExportDialog(); }catch(e){} };
 window.__disp = (id)=>{ const e=document.getElementById(id); return e?getComputedStyle(e).display:'ABSENT'; };
 window.__buildReasonPrint = (k)=>{ buildPrintReport(k); return document.getElementById('repPrintArea').innerHTML; };
+window.__repSigList = ()=>repSigList(); // م٦-٣: محرّر أعضاء اللجنة (للفحص)
+window.__docVarCtx = (k)=>docVarCtx(k, (typeof repRows!=='undefined'?repRows:[])); // م٦-٣: متغيّرات الصيغة (للفحص)
 window.__acBuildBackup = ()=>acBuildBackup();
 window.__acChecksum = (s)=>acChecksum(s); // إصلاح-٥ (بند ١١): بناء بصمة صحيحة في الاختبار
 window.__safeId = (c)=>safeId(c); // إصلاح-٥ (بند ٨)

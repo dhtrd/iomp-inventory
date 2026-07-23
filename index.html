@@ -1028,11 +1028,19 @@ input[type="checkbox"]:not(.rcap):not(.rtask){width:18px!important;min-width:18p
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="btn ghost" data-reason="branch" style="text-align:right;line-height:1.5">📋 مراجعة الفرع <span class="muted" style="font-weight:400">— باركود، اسم، فئة، دفتري، فعلي، فرق + إجماليات</span></button>
       <button class="btn ghost" data-reason="detailed" style="text-align:right;line-height:1.5">📊 تقرير مفصل <span class="muted" style="font-weight:400">— كل الأعمدة والقيم + ملخص</span></button>
-      <button class="btn ghost" data-reason="committee" style="text-align:right;line-height:1.5">✍ محضر لجنة الجرد <span class="muted" style="font-weight:400">— ملخص + جدول + خانات توقيع اللجنة</span></button>
+      <button class="btn ghost" data-reason="committee" style="text-align:right;line-height:1.5">✍ محضر لجنة الجرد <span class="muted" style="font-weight:400">— ملخص كتابي بالإجماليات + تواقيع اللجنة (بلا جدول)</span></button>
       <button class="btn ghost" data-reason="mgmt" style="text-align:right;line-height:1.5">🏢 تقرير للإدارة <span class="muted" style="font-weight:400">— القيم والإجماليات وحالة كل صنف</span></button>
-      <button class="btn ghost" data-reason="varianceSummary" id="prVarSum" style="text-align:right;line-height:1.5">📉 محضر ملخّص الفروقات <span class="muted" style="font-weight:400">— الفروقات فقط + تواقيع الجلسة (بعد الاعتماد)</span></button>
-      <button class="btn ghost" data-reason="handover" id="prHandover" style="text-align:right;line-height:1.5">🔁 محضر استلام مخزون <span class="muted" style="font-weight:400">— المعدود + المُسلِّم/المُستلِم</span></button>
-      <button class="btn ghost" data-reason="custody" style="text-align:right;line-height:1.5">📦 محضر عهدة <span class="muted" style="font-weight:400">— قالب عهدة قابل للتحرير</span></button>
+      <button class="btn ghost" data-reason="varianceSummary" id="prVarSum" style="text-align:right;line-height:1.5">📉 محضر ملخّص الفروقات <span class="muted" style="font-weight:400">— ملخص كتابي بالإجماليات + تواقيع (بعد الاعتماد)</span></button>
+      <button class="btn ghost" data-reason="handover" id="prHandover" style="text-align:right;line-height:1.5">🔁 محضر استلام مخزون <span class="muted" style="font-weight:400">— ملخص كتابي + المُسلِّم/المُستلِم (بلا جدول)</span></button>
+      <button class="btn ghost" data-reason="custody" style="text-align:right;line-height:1.5">📦 محضر عهدة <span class="muted" style="font-weight:400">— جدول الأصناف المعدودة كعهدة (منفصل)</span></button>
+    </div>
+    <div id="prSigWrap" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <b style="font-size:13px">أعضاء اللجنة (للتواقيع)</b>
+        <button class="btn ghost sm" id="prSigAdd" type="button">+ إضافة عضو</button>
+      </div>
+      <div id="prSigRows"></div>
+      <div class="muted" style="font-size:11.5px;margin-top:4px">احذف/أضف الأعضاء هنا — ينعكس على المحضر فورًا عند الطباعة لهذه الجلسة.</div>
     </div>
     <button class="btn ghost sm" id="printReasonCancel" style="margin-top:14px">إلغاء</button>
   </div>
@@ -3081,21 +3089,26 @@ function docSignatories(){
 const DOC_VARS=[{k:'{company}',d:'اسم الشركة'},{k:'{document}',d:'اسم المستند'},{k:'{session}',d:'اسم الجلسة'},{k:'{location}',d:'الموقع/المستودع'},{k:'{date}',d:'التاريخ'},{k:'{items}',d:'عدد الأصناف'},{k:'{counted}',d:'المعدود'},{k:'{netVar}',d:'صافي الفروقات'},{k:'{approver}',d:'المعتمِد'},
   {k:'{committee}',d:'أعضاء لجنة الجرد'},{k:'{newResp}',d:'المسؤول الجديد (إن وجد)'},{k:'{oldResp}',d:'المسؤول السابق (إن وجد)'},{k:'{branchMgr}',d:'مسؤول الفرع (إن سُجّل)'},{k:'{totalCost}',d:'إجمالي التكلفة الدفترية'},{k:'{totalActual}',d:'إجمالي قيمة الفعلي'},{k:'{onHand}',d:'إجمالي الكمية في اليد'},
   // م٦-٣: متغيّرات المبالغ والكميات للفروقات — للصيغة الصحيحة (مبلغ الزيادة/العجز/الصافي + الكميات)
-  {k:'{surplusVal}',d:'مبلغ الزيادة'},{k:'{deficitVal}',d:'مبلغ العجز'},{k:'{surplusQty}',d:'كمية الزيادة'},{k:'{deficitQty}',d:'كمية العجز'},{k:'{netQty}',d:'صافي فرق الكميات'},{k:'{countedQty}',d:'إجمالي الكميات المعدودة'},{k:'{bookQty}',d:'إجمالي الكميات الدفترية'}];
+  {k:'{surplusVal}',d:'مبلغ الزيادة'},{k:'{deficitVal}',d:'مبلغ العجز'},{k:'{surplusQty}',d:'كمية الزيادة'},{k:'{deficitQty}',d:'كمية العجز'},{k:'{netQty}',d:'صافي فرق الكميات'},{k:'{countedQty}',d:'إجمالي الكميات المعدودة'},{k:'{bookQty}',d:'إجمالي الكميات الدفترية'},
+  {k:'{bookValue}',d:'القيمة الدفترية (= totalCost)'},{k:'{actualValue}',d:'القيمة الفعلية (= totalActual)'}];
 // التاريخ المعتمد للمحاضر: تاريخ بدء العد الفعلي (startedAt) — لا تاريخ الطباعة؛ وبغيابه تاريخ اليوم
 function officialDate(){ const t=repSess&&repSess.startedAt; if(!t) return new Date().toLocaleDateString('en-GB');
   const d=(t&&typeof t.toDate==='function')?t.toDate():new Date(t.__ts||t.seconds*1000||t); return isNaN(+d)?new Date().toLocaleDateString('en-GB'):d.toLocaleDateString('en-GB'); }
-function docVarCtx(reasonKey,rows){ const s2=summarize(rows||[]); const R=PRINT_REASONS[reasonKey]||PRINT_REASONS.detailed;
+function docVarCtx(reasonKey,rows){ const R=PRINT_REASONS[reasonKey]||PRINT_REASONS.detailed;
+  // م٦-٣: متغيّرات المحضر تُحسب على كامل الجرد (repRows) لا على المطبوع المُصفّى/المُقيَّد بسبب — فتعكس إجماليات الجرد الحقيقية وتتحدّث مباشرةً مع كل تغيّر في التقرير
+  const fullRows=(typeof repRows!=='undefined'&&Array.isArray(repRows)&&repRows.length)?repRows:(rows||[]);
+  const s2=summarize(fullRows);
   const cp=(repSess&&repSess.custodyPrev)||{}, cn=(repSess&&repSess.custodyNext)||{};
   const who=x=>x&&x.name?(x.name+(x.title?' — '+x.title:'')):'—';
-  const qty=(rows||[]).reduce((a,r)=>a+(Number(r.counted)||0),0);
+  const qty=fullRows.reduce((a,r)=>a+(Number(r.counted)||0),0);
   const finV=canSeeFinance(); // م٦-١: المتغيّرات المالية في القوالب تُستبدل بـ«—» لغير حاملي الصلاحية
   return { '{company}':'شركة الضبيبي التجارية','{document}':R.label,'{session}':(repSess&&repSess.name)||'','{location}':(repSess&&repSess.location)||'—',
-    '{date}':officialDate(),'{items}':fmt((rows||[]).length),'{counted}':fmt(s2.counted),'{netVar}':finV?fmt(round2(s2.netVar)):'—','{approver}':((repSess&&repSess.approvedByName)||'—'),
+    '{date}':officialDate(),'{items}':fmt(fullRows.length),'{counted}':fmt(s2.counted),'{netVar}':finV?fmt(round2(s2.netVar)):'—','{approver}':((repSess&&repSess.approvedByName)||'—'),
     '{committee}':docSignatories().map(x=>x.name?(x.label+': '+x.name):x.label).join('، ')||'—', // موقّعو الجلسة المسجّلون (مسمى: اسم) لهم الأولوية
     '{newResp}':who(cn),'{oldResp}':who(cp),
     '{branchMgr}':((repSess&&repSess.responsible&&repSess.responsible.name)||(repSess&&repSess.custodyNext&&repSess.custodyNext.name)||'—'), // مسؤول الموقع المسجَّل بالجلسة (وبعد الاستلام: المستلم الجديد)
     '{totalCost}':finV?fmt(round2(s2.bookVal)):'—','{totalActual}':finV?fmt(round2(s2.countedVal)):'—','{onHand}':fmt(round2(qty)),
+    '{bookValue}':finV?fmt(round2(s2.bookVal)):'—','{actualValue}':finV?fmt(round2(s2.countedVal)):'—', // م٦-٣: أسماء مرادفة أوضح للقيمة الدفترية/الفعلية
     // م٦-٣: مبالغ الفروقات وكمّياتها للصيغة
     '{surplusVal}':finV?fmt(round2(s2.surplusVal)):'—','{deficitVal}':finV?fmt(round2(Math.abs(s2.deficitVal))):'—','{surplusQty}':fmt(s2.surplusQty),'{deficitQty}':fmt(s2.deficitQty),'{netQty}':fmt(s2.netQty),'{countedQty}':fmt(round2(s2.countedQty)),'{bookQty}':fmt(round2(s2.bookQty)) }; }
 function docSubst(text,ctx){ let t=String(text==null?'':text); Object.keys(ctx).forEach(k=>{ t=t.split(k).join(ctx[k]); }); return t; }
@@ -4034,12 +4047,13 @@ async function exportDetailedExcel(){
 const PRINT_REASONS={
   branch:   {label:'مراجعة الفرع',   cols:['barcode','name','category','book','counted','diff'], summary:false, totals:true, sign:false},
   detailed: {label:'تقرير مفصل',     cols:['code','barcode','name','category','book','counted','diff','status','cost','bookVal','countedVal','varVal'], summary:true, totals:true, sign:false},
-  committee:{label:'محضر لجنة الجرد', cols:['code','name','category','book','counted','diff','status','varVal'], summary:true, totals:true, sign:true},
+  // م٦-٣: المحاضر «ملخّصة» — صيغة + إجماليات مكتوبة + تواقيع، بلا جدول أصناف (طلب العميل)
+  committee:{label:'محضر لجنة الجرد', cols:['code','name','category','book','counted','diff','status','varVal'], summary:true, totals:true, sign:true, summaryOnly:true},
   mgmt:     {label:'تقرير للإدارة',   cols:['category','name','book','counted','diff','bookVal','countedVal','varVal','status'], summary:true, totals:true, sign:false},
   // محاضر جديدة: ملخّص الفروقات (بعد الاعتماد) — استلام مخزون (سابق/جديد) — عهدة إضافي
-  varianceSummary:{label:'محضر ملخّص الفروقات', cols:['code','name','category','book','counted','diff','varVal','status'], summary:true, totals:true, sign:true, varianceOnly:true, needsApproval:true},
-  handover: {label:'محضر استلام مخزون', cols:['code','name','category','counted'], summary:true, totals:true, sign:true, handover:true, countedOnly:true},
-  custody:  {label:'محضر عهدة', cols:['code','name','category','counted'], summary:true, totals:true, sign:true, countedOnly:true}
+  varianceSummary:{label:'محضر ملخّص الفروقات', cols:['code','name','category','book','counted','diff','varVal','status'], summary:true, totals:true, sign:true, needsApproval:true, summaryOnly:true},
+  handover: {label:'محضر استلام مخزون', cols:['code','name','category','counted'], summary:true, totals:true, sign:true, handover:true, summaryOnly:true},
+  custody:  {label:'محضر عهدة', cols:['code','name','category','counted'], summary:true, totals:true, sign:true, countedOnly:true} // العهدة تبقى بجدول الأصناف المعدودة (منفصلة عن الاستلام)
 };
 // المحطّة ٣: أعمدة تقرير التصدير المفصّل قابلة للتهيئة (إظهار/إخفاء/ترتيب) — settings.export.columns
 function docColumns(){ const c=(appSettings().export||{}).columns; if(Array.isArray(c)&&c.length) return c.filter(k=>PRINT_COLDEF[k]); return PRINT_REASONS.detailed.cols.slice(); }
@@ -4065,6 +4079,8 @@ function buildPrintReport(reasonKey){
   let cols=(reasonKey==='detailed')?docColumns():R.cols.slice(); // المحطّة ٣: المفصّل يحترم أعمدة الإعدادات
   cols=finFilterCols(cols); // م٦-١: الأعمدة المالية تُحذف من كل المطبوعات لغير حاملي الصلاحية المالية
   if(rows.some(r=>r.notes&&r.notes.length)&&cols.indexOf('notes')<0)cols=cols.concat(['notes']); // ملاحظات العدّ تظهر تلقائيًّا في أي مطبوعة تتضمن صفوفها ملاحظات (طلب العميل)
+  const fullR=(typeof repRows!=='undefined'&&repRows&&repRows.length)?repRows:rows; // م٦-٣: كامل الجرد للمحاضر الملخّصة
+  const sumRows=R.summaryOnly?fullR:rows; // إجماليات المحضر الملخّص = كامل الجرد؛ المفصّل = المعروض
   const tpl=docTemplate(reasonKey), vctx=docVarCtx(reasonKey,rows); // المحطّة ٤: قالب المستند القابل للتحرير
   const dateStr=officialDate(); // التاريخ المعتمد = بدء العد الفعلي
   const pc=printCfg(); // المحطّة ٣: المحاضر تحترم إعدادات المخرجات المركزية
@@ -4076,11 +4092,11 @@ function buildPrintReport(reasonKey){
     '<div>'+logo+customHead+
     '<div style="font-size:14px;font-weight:600">'+(tpl.title?esc(docSubst(tpl.title,vctx)):(esc(R.label)+' — تقرير جرد المخزون'))+'</div>'+
     '<div style="font-size:12px;color:#555">'+esc(repSess.name)+' • '+esc(repSess.location||'—')+(repSess.blind?' • جلسة عمياء':'')+'</div></div>'+
-    '<div style="text-align:left;font-size:12px;color:#555">التاريخ: '+esc(dateStr)+'<br>عدد الأصناف: '+fmt(rows.length)+'</div></div>';
+    '<div style="text-align:left;font-size:12px;color:#555">التاريخ: '+esc(dateStr)+'<br>عدد الأصناف: '+fmt(sumRows.length)+'</div></div>';
   // المحطّة ٤: تمهيد القالب وفقراته المرقّمة (بمتغيّرات مُستبدَلة)
   if(tpl.intro) html+='<div style="font-size:12.5px;line-height:1.9;margin:8px 0;white-space:pre-wrap">'+esc(docSubst(tpl.intro,vctx))+'</div>';
   if(Array.isArray(tpl.clauses)&&tpl.clauses.length) html+='<ol style="font-size:12.5px;line-height:1.9;margin:8px 0;padding-inline-start:22px">'+tpl.clauses.map(c=>'<li>'+esc(docSubst(c,vctx))+'</li>').join('')+'</ol>';
-  if(R.summary){ const s2=summarize(rows); const finP=canSeeFinance(); const hasCost=finP&&s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—'; // م٦-١: شرائح القيم للمالية فقط
+  if(R.summary){ const s2=summarize(sumRows); const finP=canSeeFinance(); const hasCost=finP&&s2.withCost>0; const m=n=>hasCost?fmt(round2(n)):'—'; // م٦-١: شرائح القيم للمالية فقط • م٦-٣: المحضر الملخّص على كامل الجرد
     const qs=q=>(q?' ('+(q>0?'+':'−')+fmt(Math.abs(q))+' وحدة)':''); // م٦-٣: الكميات بجانب المبلغ
     const chip=(k,v)=>'<span style="border:1px solid #ccc;border-radius:6px;padding:4px 10px">'+k+': <b>'+v+'</b></span>';
     html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:12px">'+
@@ -4088,6 +4104,7 @@ function buildPrintReport(reasonKey){
       // م٦-٣: مبالغ الزيادة/العجز مع كمّياتها بحيث «مبلغ الزيادة − مبلغ العجز = صافي الفرق» (طلب العميل)
       (finP?chip('مبلغ الزيادة',m(s2.surplusVal)+qs(s2.surplusQty))+chip('مبلغ العجز',m(Math.abs(s2.deficitVal))+qs(-s2.deficitQty))+chip('القيمة الدفترية',m(s2.bookVal))+chip('القيمة الفعلية',m(s2.countedVal))+chip('صافي الفرق',m(s2.netVar)+qs(s2.netQty)):'')+'</div>';
   }
+  if(!R.summaryOnly){
   // م٦-٣: تنبيه النطاق — إن كان المطبوع مُصفّى (أقلّ من كامل أصناف الجلسة) كي لا تُقرأ إجمالياته على أنها الجرد الكامل
   { const full=(repRows&&repRows.length)||rows.length; if(rows.length<full) html+='<div style="font-size:11.5px;color:#B26A12;margin:-4px 0 10px">⚠ تقرير مُصفّى: يعرض '+fmt(rows.length)+' من '+fmt(full)+' صنفًا — الإجماليات أعلاه للمعروض فقط لا لكامل الجرد.</div>'; }
   const dense=cols.length>=10, padTh=dense?'4px 4px':'5px 7px', padTd=dense?'3px 4px':'4px 7px'; // إصلاح م٦: حشو مكثّف للأعمدة الكثيرة كي تتّسع الأرقام بلا التفاف داخلها
@@ -4102,6 +4119,7 @@ function buildPrintReport(reasonKey){
     }).join('')+'</tr>';
   }
   html+='<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:'+printFontFor(cols.length)+'px">'+printColgroup(cols)+'<thead><tr>'+th+'</tr></thead><tbody>'+(rows.length?body:'<tr><td colspan="'+cols.length+'" style="padding:10px;text-align:center;border:1px solid #bbb">لا أصناف مطابقة للمرشّحات الحالية.</td></tr>')+'</tbody>'+(R.totals&&rows.length?'<tfoot>'+tf+'</tfoot>':'')+'</table>'; // إصلاح م٦: احتواء كل الأعمدة داخل الورقة (colgroup موزون + بنط تلقائي)
+  } // نهاية جدول الأصناف — يُتخطّى في المحاضر الملخّصة
   if(R.sign){
     const line='..........................';
     const cell=(label,name,title)=>'<div style="flex:1;min-width:150px">'+label+': '+(name?esc(name):line)+(title?' <span style="color:#555">('+esc(title)+')</span>':'')+'<br><br>التوقيع: '+line+'</div>';
@@ -4132,11 +4150,19 @@ function reasonAvailability(pfx){ const approved=!!(repSess&&repSess.status==='a
     const m=el.querySelector('.muted'); if(m){ if(!on){ if(m.textContent.indexOf('⏳')<0) m.textContent=' — ⏳ '+why; } } };
   set($(pfx==='pr'?'prVarSum':'xVarSum'),approved,'يتاح بعد اعتماد الجلسة');
   set($(pfx==='pr'?'prHandover':'xHandover'),ho,'يتاح بعد تسجيل المسؤولَين السابق/الجديد'); }
+// م٦-٣: محرّر أعضاء اللجنة (تواقيع) في نافذة الطباعة — حذف/إضافة ينعكس على المحضر فورًا (في ذاكرة الجلسة الحالية)
+function repSigList(){ if(!repSess)return []; if(!Array.isArray(repSess.signatories)||!repSess.signatories.length) repSess.signatories=docSignatories().map(s=>({title:s.label||'',name:s.name||''})); return repSess.signatories; }
+function renderPrSig(){ const box=$('prSigRows'); if(!box)return; const list=repSigList();
+  box.innerHTML=list.length?list.map((s,i)=>'<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center" data-i="'+i+'"><input class="inp prsig-t" placeholder="المسمى" value="'+esc(s.title||'')+'" style="flex:1;min-width:0"><input class="inp prsig-n" placeholder="الاسم (اختياري)" value="'+esc(s.name||'')+'" style="flex:1;min-width:0"><button class="btn ghost sm prsig-x" type="button" title="حذف العضو" style="flex:none">✕</button></div>').join(''):'<div class="muted" style="font-size:12px">لا أعضاء — أضف عضوًا.</div>';
+  box.querySelectorAll('.prsig-t').forEach(inp=>inp.oninput=()=>{ const i=+inp.closest('[data-i]').getAttribute('data-i'); const L=repSigList(); if(L[i])L[i].title=inp.value; });
+  box.querySelectorAll('.prsig-n').forEach(inp=>inp.oninput=()=>{ const i=+inp.closest('[data-i]').getAttribute('data-i'); const L=repSigList(); if(L[i])L[i].name=inp.value; });
+  box.querySelectorAll('.prsig-x').forEach(b=>b.onclick=()=>{ const i=+b.closest('[data-i]').getAttribute('data-i'); repSigList().splice(i,1); renderPrSig(); }); }
 function openPrintDialog(){
   if(!can('report.export'))return;
   if(!printReasonsAllowed().length)return; // م٦-٢: بلا أي سبب مسموح لا تُفتح النافذة أصلًا
   const mo=$('printReasonModal'); if(!mo)return;
   mo.querySelectorAll('[data-reason]').forEach(b=>b.onclick=()=>doPrint(b.getAttribute('data-reason')));
+  renderPrSig(); if($('prSigAdd'))$('prSigAdd').onclick=()=>{ repSigList().push({title:'عضو اللجنة',name:''}); renderPrSig(); }; // م٦-٣: محرّر أعضاء اللجنة
   reasonAvailability('pr'); // إظهار/إخفاء المحاضر المشروطة (ملخّص الفروقات بعد الاعتماد، الاستلام عند وجود مُسلِّم/مُستلِم)
   mo.querySelectorAll('[data-reason]').forEach(b=>{ if(!reasonAllowed(b.getAttribute('data-reason')))b.style.display='none'; }); // م٦-٢: تظهر الأسباب المسموحة لهذا المستخدم فقط
   if($('printReasonCancel'))$('printReasonCancel').onclick=()=>{mo.style.display='none';};

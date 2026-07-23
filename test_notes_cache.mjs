@@ -49,8 +49,8 @@ async function load(page,sc){ await page.addInitScript(()=>{ try{ localStorage.c
 { const page=await ctx.newPage(); await load(page,{profile:OWNER,users:[OWNER],sessions:[OPEN({status:'approved',approvedByName:'المالك',
     __counts:[{code:'A1',qty:7}], __notes:[{code:'A1',notes:[{id:'n1',text:'زيادة من مرتجعات',by:'u_x',byName:'سعد',at:1}]}]})]});
   await page.evaluate(()=>window.__openReport('sx')); await page.waitForTimeout(500);
-  const pr=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('committee'); }catch(e){ return 'ERR:'+e.message; } });
-  ok('CN3 المحضر المطبوع يتضمن عمود الملاحظات ونصّها وكاتبها', pr.includes('الملاحظات')&&pr.includes('زيادة من مرتجعات')&&pr.includes('سعد'), pr.slice(0,80));
+  const pr=await page.evaluate(()=>{ try{ return window.__buildReasonPrint('detailed'); }catch(e){ return 'ERR:'+e.message; } });
+  ok('CN3 التقرير المفصّل المطبوع يتضمن عمود الملاحظات ونصّها وكاتبها', pr.includes('الملاحظات')&&pr.includes('زيادة من مرتجعات')&&pr.includes('سعد'), pr.slice(0,80));
   await page.close(); }
 
 // ===== CN4 — كاش اللقطة: يُكتب بعد أول تحميل، والدخول التالي فوري من الجهاز مع تحديث خلفي يصحّح =====
